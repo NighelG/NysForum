@@ -14,7 +14,6 @@ class ProfileSerializer(serializers.ModelSerializer):
     date_joined = serializers.DateTimeField(source='user.date_joined', read_only=True)
     posts_count = serializers.SerializerMethodField()
     comments_count = serializers.SerializerMethodField()
-
     class Meta:
         model = Profile
         fields = [
@@ -22,10 +21,8 @@ class ProfileSerializer(serializers.ModelSerializer):
             'posts_count', 'comments_count', 'date_joined', 'created_at', 'updated_at'
         ]
         read_only_fields = ['id', 'role', 'status', 'created_at', 'updated_at']
-
     def get_posts_count(self, obj):
         return obj.posts.count()
-
     def get_comments_count(self, obj):
         return obj.comments.count()
 
@@ -43,16 +40,13 @@ class ProfileMinimalSerializer(serializers.ModelSerializer):
 class UserRegistrationSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True, min_length=8)
     password_confirm = serializers.CharField(write_only=True)
-
     class Meta:
         model = User
         fields = ['username', 'email', 'password', 'password_confirm', 'first_name', 'last_name']
-
     def validate(self, data):
         if data['password'] != data['password_confirm']:
             raise serializers.ValidationError("Las contraseñas no coinciden")
         return data
-
     def create(self, validated_data):
         validated_data.pop('password_confirm')
         user = User.objects.create_user(

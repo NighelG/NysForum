@@ -24,7 +24,6 @@ class PostListSerializer(serializers.ModelSerializer):
     dislikes_count = serializers.SerializerMethodField()
     comments_count = serializers.SerializerMethodField()
     user_reaction = serializers.SerializerMethodField()
-
     class Meta:
         model = Post
         fields = [
@@ -32,7 +31,6 @@ class PostListSerializer(serializers.ModelSerializer):
             'views_count', 'likes_count', 'dislikes_count', 'comments_count',
             'user_reaction', 'created_at', 'updated_at'
         ]
-
     def get_likes_count(self, obj):
         return obj.reactions.filter(type='like').count()
     def get_dislikes_count(self, obj):
@@ -50,7 +48,6 @@ class PostDetailSerializer(serializers.ModelSerializer):
     profile = ProfileMinimalSerializer(read_only=True)
     categories = CategorySerializer(many=True, read_only=True)
     media_files = PostMediaSerializer(many=True, read_only=True)
-
     class Meta:
         model = Post
         fields = '__all__'
@@ -64,18 +61,15 @@ class PostCreateSerializer(serializers.ModelSerializer):
     )
     class Meta:
         model = Post
-        fields = ['title', 'content', 'category_ids']
-
+        fields = ['title', 'content', 'category_ids', 'profile']
     def validate_title(self, value):
         if len(value) < 5:
             raise serializers.ValidationError("El título debe tener al menos 5 caracteres")
         return value
-
     def validate_content(self, value):
         if len(value) < 10:
             raise serializers.ValidationError("El contenido debe tener al menos 10 caracteres")
         return value
-
     def create(self, validated_data):
         category_ids = validated_data.pop('category_ids', [])
         post = Post.objects.create(**validated_data)

@@ -7,10 +7,8 @@ class Category(models.Model):
     name = models.CharField(max_length=50, unique=True)
     description = models.TextField(blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
-
     def __str__(self):
         return self.name
-
 
 class Post(models.Model):
     profile = models.ForeignKey(Profile, on_delete=models.CASCADE, related_name='posts')
@@ -21,10 +19,8 @@ class Post(models.Model):
     views_count = models.PositiveIntegerField(default=0)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-
     def __str__(self):
         return f"{self.title} por {self.profile.user.username}"
-
 
 class PostMedia(models.Model):
     MEDIA_TYPES = [('image', 'Imagen'), ('video', 'Video'), ('audio', 'Audio')]
@@ -32,6 +28,5 @@ class PostMedia(models.Model):
     file = CloudinaryField('media')
     media_type = models.CharField(max_length=10, choices=MEDIA_TYPES)
     uploaded_at = models.DateTimeField(auto_now_add=True)
-
     def __str__(self):
         return f"{self.media_type} en {self.post.title}"

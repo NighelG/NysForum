@@ -15,7 +15,6 @@ class CommentSerializer(serializers.ModelSerializer):
     dislikes_count = serializers.SerializerMethodField()
     replies = serializers.SerializerMethodField()
     replies_count = serializers.SerializerMethodField()
-
     class Meta:
         model = Comment
         fields = [
@@ -36,8 +35,3 @@ class CommentSerializer(serializers.ModelSerializer):
         return []
     def get_replies_count(self, obj):
         return obj.replies.count()
-
-class CommentCreateSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Comment
-        fields = ['post', 'parent', 'content']
