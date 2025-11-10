@@ -11,6 +11,18 @@ class Comment(models.Model):
     content = models.TextField(validators=[MinLengthValidator(2)])
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    @property
+    def likes_count(self):
+        from moderation.models import ReactionComment
+        return ReactionComment.objects.filter(comment=self, type='like').count() 
+    @property
+    def dislikes_count(self):
+        from moderation.models import ReactionComment
+        return ReactionComment.objects.filter(comment=self, type='dislike').count()  
+    @property
+    def reports_count(self):
+        from moderation.models import ReportComment
+        return ReportComment.objects.filter(comment=self).count()
     def __str__(self):
         return f"Comentario de {self.profile.user.username}"
 
@@ -19,6 +31,6 @@ class CommentMedia(models.Model):
     comment = models.ForeignKey(Comment, on_delete=models.CASCADE, related_name='media_files')
     file = CloudinaryField('media')
     media_type = models.CharField(max_length=10, choices=MEDIA_TYPES)
-    uploaded_at = models.DateTimeField(auto_now_add=True)
+    uploaded_at = models.DateTimeField(auto_now_add=True) 
     def __str__(self):
         return f"{self.media_type} en comentario {self.comment.id}"

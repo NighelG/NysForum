@@ -57,3 +57,25 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
             last_name=validated_data.get('last_name', '')
         )
         return user
+    
+class ProfileDeleteSerializer(serializers.Serializer):
+    confirmation = serializers.BooleanField(
+        required=True,
+        help_text="Debe confirmar la eliminación"
+    )
+    def validate_confirmation(self, value):
+        if not value:
+            raise serializers.ValidationError("Debe confirmar la eliminación del perfil")
+        return value
+
+class AdminProfileDeleteSerializer(serializers.Serializer):
+    confirmation = serializers.BooleanField(required=True)
+    reason = serializers.CharField(
+        required=False, 
+        max_length=500,
+        help_text="Razón opcional para la eliminación por parte del admin"
+    )
+    def validate_confirmation(self, value):
+        if not value:
+            raise serializers.ValidationError("Debe confirmar la eliminación del perfil")
+        return value

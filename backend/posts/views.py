@@ -1,6 +1,6 @@
 from django.shortcuts import render
-
-from rest_framework import generics, permissions
+from rest_framework import generics, permissions, status
+from rest_framework.response import Response
 from .models import Post, Category
 from .serializers import (
     PostListSerializer, PostDetailSerializer, PostCreateSerializer, CategorySerializer
@@ -18,25 +18,34 @@ class CategoryDetailView(generics.RetrieveUpdateDestroyAPIView):
     lookup_field = 'slug'
 
 class PostListCreateView(generics.ListCreateAPIView):
-    queryset = Post.objects.all()
-    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+    queryset = Post.objects.select_related('profile__user').prefetch_related('categories')
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly] 
     def get_serializer_class(self):
         if self.request.method == 'POST':
             return PostCreateSerializer
-        return PostListSerializer
+        return PostListSerializer 
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        context['request'] = self.request
+        return context  
     def perform_create(self, serializer):
         serializer.save(profile=self.request.user.profile)
 
 class PostDetailView(generics.RetrieveUpdateDestroyAPIView):
-    queryset = Post.objects.all()
+    queryset = Post.objects.select_related('profile__user').prefetch_related(
+        'categories', 'media_files', 'comments'
+    )
     serializer_class = PostDetailSerializer
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
     def perform_update(self, serializer):
         post = self.get_object()
-        if post.profile != self.request.user.profile:
+        if (post.profile != self.request.user.profile and 
+            self.request.user.profile.role not in ['admin', 'true_admin']):
             raise permissions.PermissionDenied("No tienes permiso para editar este post")
         serializer.save()
     def perform_destroy(self, instance):
-        if instance.profile != self.request.user.profile and not self.request.user.is_staff:
+        current_profile = self.request.user.profile
+        if (instance.profile != current_profile and 
+            current_profile.role not in ['admin', 'true_admin']):
             raise permissions.PermissionDenied("Solo el autor o un admin puede eliminar este post")
         instance.delete()

@@ -1,12 +1,18 @@
 from django.db import models
 from django.core.validators import MinLengthValidator
+from django.utils.text import slugify
 from users.models import Profile
 from cloudinary.models import CloudinaryField
 
 class Category(models.Model):
     name = models.CharField(max_length=50, unique=True)
+    slug = models.SlugField(max_length=50, unique=True, blank=True)
     description = models.TextField(blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
+    def save(self, *args, **kwargs):
+        if not self.slug:
+            self.slug = slugify(self.name)
+        super().save(*args, **kwargs)
     def __str__(self):
         return self.name
 
@@ -19,6 +25,18 @@ class Post(models.Model):
     views_count = models.PositiveIntegerField(default=0)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    @property
+    def likes_count(self):
+        from moderation.models import ReactionPost
+        return ReactionPost.objects.filter(post=self, type='like').count()
+    @property
+    def dislikes_count(self):
+        from moderation.models import ReactionPost
+        return ReactionPost.objects.filter(post=self, type='dislike').count()
+    @property
+    def reports_count(self):
+        from moderation.models import ReportPost
+        return ReportPost.objects.filter(post=self).count()   
     def __str__(self):
         return f"{self.title} por {self.profile.user.username}"
 
