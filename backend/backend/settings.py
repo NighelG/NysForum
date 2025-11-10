@@ -43,7 +43,7 @@ INSTALLED_APPS = [
     'cloudinary_storage',
     'cloudinary',
     
-    'users',
+    'users.apps.UsersConfig',
     'posts',
     'comments',
     'moderation',
