@@ -10,12 +10,12 @@ class CategoryListCreateView(generics.ListCreateAPIView):
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
-
+    
 class CategoryDetailView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
-    lookup_field = 'slug'
+    lookup_field = 'id'
 
 class PostListCreateView(generics.ListCreateAPIView):
     queryset = Post.objects.select_related('profile__user').prefetch_related('categories')
@@ -23,11 +23,11 @@ class PostListCreateView(generics.ListCreateAPIView):
     def get_serializer_class(self):
         if self.request.method == 'POST':
             return PostCreateSerializer
-        return PostListSerializer 
+        return PostListSerializer
     def get_serializer_context(self):
         context = super().get_serializer_context()
         context['request'] = self.request
-        return context  
+        return context 
     def perform_create(self, serializer):
         serializer.save(profile=self.request.user.profile)
 

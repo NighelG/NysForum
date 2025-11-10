@@ -30,21 +30,20 @@ class CommentSerializer(serializers.ModelSerializer):
     def get_dislikes_count(self, obj):
         return obj.dislikes_count
     def get_reports_count(self, obj):
-        return obj.reports_count 
+        return obj.reports_count
     def get_replies(self, obj):
         if obj.parent is None:
             replies = obj.replies.all()
             return CommentSerializer(replies, many=True, context=self.context).data
         return []
     def get_replies_count(self, obj):
-        return obj.replies.count()  
+        return obj.replies.count()
     def get_user_reaction(self, obj):
         request = self.context.get('request')
-        if request and request.user.is_authenticated and hasattr(request.user, 'profile'):
-            from moderation.models import ReactionComment
-            reaction = ReactionComment.objects.filter(
-                comment=obj, 
-                profile=request.user.profile
-            ).first()
-            return reaction.type if reaction else None
+        if request and request.user.is_authenticated:
+            if hasattr(request.user, 'profile'):
+                reaction = obj.reactioncomment_set.filter(
+                    profile=request.user.profile
+                ).first()
+                return reaction.type if reaction else None
         return None

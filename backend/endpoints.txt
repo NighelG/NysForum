@@ -1,0 +1,16 @@
+Esto no tiene ningun uso mas alla de facilitar las pruebas en Thunder
+
+GET    /api/users/profiles/           # Listar perfiles
+POST   /api/users/register/           # Registro
+POST   /api/users/profiles/me/delete/ # Auto-eliminación
+
+GET    /api/posts/                    # Listar posts  
+POST   /api/posts/                    # Crear post
+GET    /api/posts/1/                  # Ver post específico
+
+GET    /api/comments/                 # Listar comentarios
+POST   /api/comments/                 # Crear comentario
+
+POST   /api/moderation/reactions/posts/    # Reaccionar a post
+POST   /api/moderation/reports/posts/      # Reportar post
+GET    /api/moderation/actions/posts/      # Ver acciones moderación (solo mods/admins)

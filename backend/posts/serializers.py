@@ -6,10 +6,11 @@ class CategorySerializer(serializers.ModelSerializer):
     posts_count = serializers.SerializerMethodField()
     class Meta:
         model = Category
-        fields = ['id', 'name', 'slug', 'description', 'posts_count', 'created_at']
-        read_only_fields = ['id', 'slug', 'created_at']
+        fields = ['id', 'name', 'description', 'posts_count', 'created_at']
+        read_only_fields = ['id', 'created_at']
     def get_posts_count(self, obj):
         return obj.posts.count()
+
 class PostMediaSerializer(serializers.ModelSerializer):
     class Meta:
         model = PostMedia
@@ -38,16 +39,15 @@ class PostListSerializer(serializers.ModelSerializer):
     def get_comments_count(self, obj):
         return obj.comments.count()
     def get_reports_count(self, obj):
-        return obj.reports_count  
+        return obj.reports_count
     def get_user_reaction(self, obj):
         request = self.context.get('request')
-        if request and request.user.is_authenticated and hasattr(request.user, 'profile'):
-            from moderation.models import ReactionPost
-            reaction = ReactionPost.objects.filter(
-                post=obj, 
-                profile=request.user.profile
-            ).first()
-            return reaction.type if reaction else None
+        if request and request.user.is_authenticated:
+            if hasattr(request.user, 'profile'):
+                reaction = obj.reactionpost_set.filter(
+                    profile=request.user.profile
+                ).first()
+                return reaction.type if reaction else None
         return None
 
 class PostDetailSerializer(serializers.ModelSerializer):
@@ -57,16 +57,16 @@ class PostDetailSerializer(serializers.ModelSerializer):
     likes_count = serializers.SerializerMethodField()
     dislikes_count = serializers.SerializerMethodField()
     comments_count = serializers.SerializerMethodField()
-    reports_count = serializers.SerializerMethodField()
+    reports_count = serializers.SerializerMethodField()   
     class Meta:
         model = Post
-        fields = '__all__'
+        fields = '__all__' 
     def get_likes_count(self, obj):
-        return obj.likes_count
+        return obj.likes_count  
     def get_dislikes_count(self, obj):
-        return obj.dislikes_count  
+        return obj.dislikes_count 
     def get_comments_count(self, obj):
-        return obj.comments.count()  
+        return obj.comments.count() 
     def get_reports_count(self, obj):
         return obj.reports_count
 
@@ -79,11 +79,11 @@ class PostCreateSerializer(serializers.ModelSerializer):
     )  
     class Meta:
         model = Post
-        fields = ['title', 'content', 'category_ids'] 
+        fields = ['title', 'content', 'category_ids']
     def validate_title(self, value):
         if len(value) < 5:
             raise serializers.ValidationError("El título debe tener al menos 5 caracteres")
-        return value  
+        return value
     def validate_content(self, value):
         if len(value) < 10:
             raise serializers.ValidationError("El contenido debe tener al menos 10 caracteres")
