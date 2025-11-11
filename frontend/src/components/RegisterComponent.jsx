@@ -1,99 +1,98 @@
-import { useState } from 'react'
-import { useAuth } from '../context/AuthContext'
+import React, { useState } from 'react'
+import { Link, useNavigate } from 'react-router-dom'
+import { useAuth } from '../../context/AuthContext'
+import './RegisterComponent.css'
 
-const RegisterComponent = ({ onBack }) => {
-const [registerData, setRegisterData] = useState({
-    username: '',
-    email: '',
-    password: '',
-    confirmPassword: ''
-})
-const [formErrors, setFormErrors] = useState({})
-const { register, loading } = useAuth()
+function RegisterComponent() {
+    const [user, setUser] = useState('')
+    const [email, setEmail] = useState('')
+    const [password, setPassword] = useState('')
+    const [confirmarPassword, setConfirmarPassword] = useState('')
+    const [errorMsg, setErrorMsg] = useState('')
+    const navigate = useNavigate()
+    const { register } = useAuth()
 
-const validateForm = () => {
-    const errors = {};  
-    if (!registerData.username.trim()) {
-    errors.username = 'El nombre de usuario es requerido'
+    function validarCorreo(correo) {
+        const dirrecPopular = /^[a-zA-Z0-9._%+-]+@(gmail\.com|googlemail\.com|hotmail\.com|outlook\.com|live\.com|yahoo\.com|yahoo\.es)$/i
+        if (!dirrecPopular.test(correo)) {
+            console.log("Correo no válido, solo se aceptan dominios populares")
+            return false
+        }
+        return true
     }
-    if (!registerData.email.trim()) {
-    errors.email = 'El email es requerido'
-    } else if (!/\S+@\S+\.\S+/.test(registerData.email)) {
-    errors.email = 'El email no es válido'
+    const validarUsuario = () => {
+        return user.length >= 3
     }
-    if (!registerData.password) {
-    errors.password = 'La contraseña es requerida'
-    } else if (registerData.password.length < 6) {
-    errors.password = 'La contraseña debe tener al menos 6 caracteres'
+    const validarPassword = () => {
+        return password.length >= 8
     }
-    if (registerData.password !== registerData.confirmPassword) {
-    errors.confirmPassword = 'Las contraseñas no coinciden'
+    const handleRegistro = async () => {
+        if (!user || !email || !password || !confirmarPassword) {
+            setErrorMsg("Por favor, llena todos los espacios")
+            return
+        }
+        if (password !== confirmarPassword) {
+            setErrorMsg("Las contraseñas no son iguales")
+            return
+        }
+        if (!validarUsuario()) {
+            setErrorMsg("El nombre de usuario debe tener al menos 3 caracteres")
+            return
+        }
+        if (!validarPassword()) {
+            setErrorMsg("La contraseña debe tener al menos 8 caracteres")
+            return
+        }
+        if (!validarCorreo(email)) {
+            setErrorMsg("Por favor ingresa un correo válido")
+            return
+        }
+        try {
+        const result = await register({
+            username: user,
+            email: email,
+            password: password,
+            password_confirm: confirmarPassword,
+            first_name: "",
+            last_name: "" 
+        })
+        if (result.success) {
+            navigate('/LobbyPage')
+            console.log("Registrado con exito")
+        } else {
+            setErrorMsg(result.error)
+        }  
+        } catch (error) {
+        setErrorMsg("Error al registrar el usuario")
+        }
     }
-    setFormErrors(errors);
-    return Object.keys(errors).length === 0
+
+    return (
+        <div className='registerBody'>
+            <br />
+            <h2>Registro</h2>
+            <p>Completa los siguientes espacios</p>
+            <br /><br />
+            <label >
+                <input type="text" placeholder='Nombre del Usuario' minLength={"3"} maxLength={"20"} value={user} onChange={(e) => setUser(e.target.value)}/>
+            </label>
+            <br /><br />
+            <label >
+                <input type="email" placeholder='Correo' value={email} onChange={(e) => setEmail(e.target.value)} />
+            </label>
+            <br /><br />
+            <label >
+                <input type="password" placeholder='Contraseña' minLength={"8"} maxLength={"15"} value={password} onChange={(e) => setPassword(e.target.value)} />
+            </label>
+            <br /><br />
+            <label >
+                <input type="password" placeholder='Confirmar Contraseña' value={confirmarPassword} onChange={(e) => setConfirmarPassword(e.target.value)} />
+            </label>
+            <br /><br />
+            <button className='button' onClick={handleRegistro}>Registrarse</button>
+            {errorMsg && <h2>{errorMsg}</h2>}
+        </div>
+    )
 }
-const handleRegister = async (e) => {
-    e.preventDefault()
-    
-    if (!validateForm()) return
 
-    const result = await register(registerData)
-    if (!result.success) {
-    alert(result.error)
-    }
-}
-const handleInputChange = (field, value) => {
-    setRegisterData(prev => ({ ...prev, [field]: value }))
-    if (formErrors[field]) {
-    setFormErrors(prev => ({ ...prev, [field]: '' }))
-    }
-}
-
-return (
-    <div className="card">
-    <div className="card-body">
-        <div className="d-flex justify-content-between align-items-center mb-3">
-        <h3 className="card-title mb-0">Registro</h3>
-        <button className="btn btn-sm btn-outline-secondary" onClick={onBack}>Volver</button>
-        </div>
-        
-        <form onSubmit={handleRegister}>
-        <div className="mb-3">
-        <label className="form-label">Nombre de Usuario</label>
-            <input type="text" className={`form-control ${formErrors.username ? 'is-invalid' : ''}`}value={registerData.username}onChange={(e) => handleInputChange('username', e.target.value)}required />
-            {formErrors.username && (
-            <div className="invalid-feedback">{formErrors.username}</div>
-            )}
-        </div>
-        
-        <div className="mb-3">
-            <label className="form-label">Email</label>
-            <input type="email" className={`form-control ${formErrors.email ? 'is-invalid' : ''}`}value={registerData.email} onChange={(e) => handleInputChange('email', e.target.value)} required />
-            {formErrors.email && (
-            <div className="invalid-feedback">{formErrors.email}</div>
-            )}
-        </div>
-        
-        <div className="mb-3">
-            <label className="form-label">Contraseña</label>
-            <input type="password" className={`form-control ${formErrors.password ? 'is-invalid' : ''}`}value={registerData.password}onChange={(e) => handleInputChange('password', e.target.value)} required />
-            {formErrors.password && (
-            <div className="invalid-feedback">{formErrors.password}</div>
-            )}
-        </div>
-        
-        <div className="mb-3">
-            <label className="form-label">Confirmar Contraseña</label>
-            <input type="password" className={`form-control ${formErrors.confirmPassword ? 'is-invalid' : ''}`} value={registerData.confirmPassword} onChange={(e) => handleInputChange('confirmPassword', e.target.value)} required/>
-            {formErrors.confirmPassword && (
-            <div className="invalid-feedback">{formErrors.confirmPassword}</div>
-            )}
-        </div>
-        <button type="submit" className="btn btn-success w-100"disabled={loading}>{loading ? 'Registrando...' : 'Registrarse'}</button>
-        </form>
-    </div>
-    </div>
-);
-};
-
-export default RegisterComponent;
+export default RegisterComponent

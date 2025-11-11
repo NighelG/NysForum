@@ -1,20 +1,26 @@
 import { useState, useCallback } from "react";
 
-export const useAPI = () => {
+export const useApi  = () => {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
-
-}
-
+    
     const execute = useCallback(async (apiCall, ...args) => {
         setLoading(true);
-        setError(null);
-        
+        setError(null);  
         try{
             const result = await apiCall(...args);
             return result;
-        } catch (error) {
-            setError (error.message);
-            throw error;
+        } catch (err) {
+            setError(err.message);
+            throw err;
+        } finally {
+            setLoading(false);
         }
-    })
+    }, [])
+
+    return {
+        loading,
+        error,
+        execute
+    };
+}

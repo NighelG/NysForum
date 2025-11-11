@@ -1,6 +1,6 @@
 import { apiRequest, getAuthHeaders } from './apiConfig';
 
-    export const authService = {
+export const authService = {
     // Login con JWT
     login: async (username, password) => {
             const response = await fetch('http://localhost:8000/api/token/', {
