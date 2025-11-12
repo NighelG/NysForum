@@ -15,11 +15,29 @@ export const apiRequest = async (endpoint, options = {}) => {
         headers: getAuthHeaders(),
         ...options
     };
-    const response = await fetch(url, config);
-    if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.error || errorData.detail || `Error ${response.status}`);
+    try {
+        const response = await fetch(url, config);
+        if (response.status === 204) {
+            return null;
+        }
+        if (!response.ok) {
+            let errorMessage = `Error ${response.status}`;       
+            try {
+                const errorData = await response.json();
+                errorMessage = errorData.error || errorData.detail || errorData.message || errorMessage;
+            } catch (jsonError) {
+                const textError = await response.text();
+                if (textError) {
+                    errorMessage = textError;
+                }
+            }  
+            throw new Error(errorMessage);
+        }
+        return await response.json();
+    } catch (error) {
+        if (error.name === 'TypeError' && error.message.includes('Failed to fetch')) {
+            throw new Error('Error de conexión. Verifica que el servidor esté ejecutándose.');
+        }
+        throw error;
     }
-
-    return await response.json();
 };

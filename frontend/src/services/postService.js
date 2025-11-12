@@ -1,12 +1,14 @@
-import { apiRequest } from './apiConfig';
+import { apiRequest } from './apiConfig.js';
 
 export const postService = {
     getPosts: async () => {
         return await apiRequest('/posts/');
     },
+
     getPost: async (postId) => {
         return await apiRequest(`/posts/${postId}/`);
     },
+
     createPost: async (postData) => {
         return await apiRequest('/posts/', {
             method: 'POST',
@@ -35,5 +37,9 @@ export const postService = {
                 type: reactionType
             })
         });
+    },
+
+    getCategories: async () => {
+        return await apiRequest('/posts/categories/');
     }
 };

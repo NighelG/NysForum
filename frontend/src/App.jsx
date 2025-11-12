@@ -1,16 +1,15 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
+import { BrowserRouter } from 'react-router-dom';
+import { AuthProvider } from './context/AuthContext.jsx';
+import Routing from './routes/Routing.jsx';
 
 function App() {
-
   return (
-    <>
-      <div>
-
-      </div>
-    </>
-  )
+    <AuthProvider>
+      <BrowserRouter>
+        <Routing />
+      </BrowserRouter>
+    </AuthProvider>
+  );
 }
 
-export default App
+export default App;

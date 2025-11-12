@@ -1,4 +1,4 @@
-import { apiRequest } from './apiConfig';
+import { apiRequest } from './apiConfig.js';
 
 export const commentService = {
     getComments: async () => {
@@ -13,18 +13,29 @@ export const commentService = {
     },
 
     deleteComment: async (commentId) => {
-    return await apiRequest(`/comments/${commentId}/`, {
+        return await apiRequest(`/comments/${commentId}/`, {
             method: 'DELETE'
         });
     },
 
     reactToComment: async (commentId, reactionType) => {
-    return await apiRequest('/moderation/reactions/comments/', {
+        return await apiRequest('/moderation/reactions/comments/', {
             method: 'POST',
             body: JSON.stringify({
                 comment: commentId,
                 type: reactionType
             })
+        });
+    },
+
+    getComment: async (commentId) => {
+        return await apiRequest(`/comments/${commentId}/`);
+    },
+
+    updateComment: async (commentId, commentData) => {
+        return await apiRequest(`/comments/${commentId}/`, {
+            method: 'PUT',
+            body: JSON.stringify(commentData)
         });
     }
 };
