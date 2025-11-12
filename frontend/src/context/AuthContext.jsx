@@ -6,10 +6,10 @@ const AuthContext = createContext()
 export const AuthProvider = ({ children }) => {
     const [user, setUser] = useState(null)
     const [loading, setLoading] = useState(true)
+    
     useEffect(() => {
         checkAuth()
     }, [])
-
     const checkAuth = async () => {
         const token = localStorage.getItem('authToken')
         if (!token) {
@@ -26,42 +26,33 @@ export const AuthProvider = ({ children }) => {
             setLoading(false)
         }
     }
-
-    const login = async (credentials) => {
-            try {
-            const tokens = await authService.login(credentials.username, credentials.password)
+    const login = async (username, password) => {
+        try {
+            const tokens = await authService.login(username, password)
             localStorage.setItem('authToken', tokens.access)
             const userData = await authService.getCurrentUser()
             setUser(userData)
-            return { success: true, user: userData }
-        }catch (error) {
+            return userData
+        } catch (error) {
+            throw new Error(error.message || 'Credenciales inválidas')
+        }
+    }
+    const register = async (userData) => {
+        try {
+            const result = await authService.register(userData)
             return { 
-            success: false, 
-            error: error.message || 'Credenciales inválidas' 
+                success: true, 
+                message: 'Registro exitoso. Ahora puedes iniciar sesión.',
+                user: result 
             }
+        } catch (error) {
+            throw new Error(error.message || 'Error en el registro')
         }
     }
-const register = async (userData) => {
-    try {
-        const result = await authService.register(userData)
-        await new Promise(resolve => setTimeout(resolve, 500))    
-        const loginResult = await login({
-            username: userData.username,
-            password: userData.password
-        })
-        return loginResult
-    } catch (error) {
-        return { 
-            success: false, 
-            error: error.message || 'Error en el registro' 
-        }
-    }
-}
     const logout = () => {
         localStorage.removeItem('authToken')
         setUser(null)
     }
-
     return (
         <AuthContext.Provider value={{ 
             user, 
@@ -75,7 +66,6 @@ const register = async (userData) => {
         </AuthContext.Provider>
     )
 }
-
 export const useAuth = () => {
     const context = useContext(AuthContext)
     if (!context) {

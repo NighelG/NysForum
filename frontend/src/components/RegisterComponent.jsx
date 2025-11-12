@@ -1,36 +1,36 @@
 import React, { useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
-import { useAuth } from "../context/AuthContext.jsx"
+import { authService } from '../services/authService.js'
 
-function RegisterComponent() {
-    const [user, setUser] = useState('')
-    const [email, setEmail] = useState('')
-    const [password, setPassword] = useState('')
-    const [confirmarPassword, setConfirmarPassword] = useState('')
+function RegisterComponent({ onClose }) {
+    const [formData, setFormData] = useState({
+        username: '',
+        email: '',
+        password: '',
+        password_confirm: '',
+        first_name: '',
+        last_name: ''
+    })
     const [errorMsg, setErrorMsg] = useState('')
-    const navigate = useNavigate()
-    const { register } = useAuth()
-
+    const [isLoading, setIsLoading] = useState(false)
+    const handleInputChange = (field, value) => {
+        setFormData(prev => ({
+            ...prev,
+            [field]: value
+        }))
+    }
     function validarCorreo(correo) {
         const dirrecPopular = /^[a-zA-Z0-9._%+-]+@(gmail\.com|googlemail\.com|hotmail\.com|outlook\.com|live\.com|yahoo\.com|yahoo\.es)$/i
-        if (!dirrecPopular.test(correo)) {
-            console.log("Correo no válido, solo se aceptan dominios populares")
-            return false
-        }
-        return true
+        return dirrecPopular.test(correo)
     }
-    const validarUsuario = () => {
-        return user.length >= 3
-    }
-    const validarPassword = () => {
-        return password.length >= 8
-    }
+    const validarUsuario = () => formData.username.length >= 3
+    const validarPassword = () => formData.password.length >= 8
     const handleRegistro = async () => {
-        if (!user || !email || !password || !confirmarPassword) {
-            setErrorMsg("Por favor, llena todos los espacios")
+        setErrorMsg('')
+        if (!formData.username || !formData.email || !formData.password || !formData.password_confirm) {
+            setErrorMsg("Por favor, llena todos los espacios obligatorios")
             return
         }
-        if (password !== confirmarPassword) {
+        if (formData.password !== formData.password_confirm) {
             setErrorMsg("Las contraseñas no son iguales")
             return
         }
@@ -42,55 +42,110 @@ function RegisterComponent() {
             setErrorMsg("La contraseña debe tener al menos 8 caracteres")
             return
         }
-        if (!validarCorreo(email)) {
-            setErrorMsg("Por favor ingresa un correo válido")
+        if (!validarCorreo(formData.email)) {
+            setErrorMsg("Por favor ingresa un correo válido de dominio popular (Gmail, Hotmail, Yahoo, etc.)")
             return
         }
+        setIsLoading(true)
         try {
-        const result = await register({
-            username: user,
-            email: email,
-            password: password,
-            password_confirm: confirmarPassword,
-            first_name: "",
-            last_name: "" 
-        })
-        if (result.success) {
-            navigate('/LobbyPage')
-            console.log("Registrado con exito")
-        } else {
-            setErrorMsg(result.error)
-        }  
+            console.log('Iniciando proceso de registro...')
+            const result = await authService.register({
+                username: formData.username,
+                email: formData.email,
+                password: formData.password,
+                password_confirm: formData.password_confirm,
+                first_name: formData.first_name,
+                last_name: formData.last_name
+            })
+            console.log('Registro exitoso:', result)
+            setErrorMsg('success: ¡Registro exitoso! Ahora puedes iniciar sesión.')
+            setTimeout(() => {
+                onClose()
+            }, 2000)
         } catch (error) {
-        setErrorMsg("Error al registrar el usuario")
+            console.error('Error en registro:', error)
+            if (error.message.includes('username')) {
+                setErrorMsg('El nombre de usuario ya existe o no es válido')
+            } else if (error.message.includes('email')) {
+                setErrorMsg('El correo electrónico ya está registrado o no es válido')
+            } else if (error.message.includes('password')) {
+                setErrorMsg('La contraseña no cumple los requisitos')
+            } else {
+                setErrorMsg(error.message || "Error al registrar el usuario.")
+            }
+        } finally {
+            setIsLoading(false)
         }
     }
 
     return (
-        <div className='registerBody'>
-            <br />
-            <h2>Registro</h2>
-            <p>Completa los siguientes espacios</p>
-            <br /><br />
-            <label >
-                <input type="text" placeholder='Nombre del Usuario' minLength={"3"} maxLength={"20"} value={user} onChange={(e) => setUser(e.target.value)}/>
-            </label>
-            <br /><br />
-            <label >
-                <input type="email" placeholder='Correo' value={email} onChange={(e) => setEmail(e.target.value)} />
-            </label>
-            <br /><br />
-            <label >
-                <input type="password" placeholder='Contraseña' minLength={"8"} maxLength={"15"} value={password} onChange={(e) => setPassword(e.target.value)} />
-            </label>
-            <br /><br />
-            <label >
-                <input type="password" placeholder='Confirmar Contraseña' value={confirmarPassword} onChange={(e) => setConfirmarPassword(e.target.value)} />
-            </label>
-            <br /><br />
-            <button className='button' onClick={handleRegistro}>Registrarse</button>
-            {errorMsg && <h2>{errorMsg}</h2>}
-        </div>
+        <>
+
+            <div className="modal-backdrop" onClick={onClose}></div>
+
+            <div className="modal-container">
+
+                <div className="d-flex justify-content-between align-items-center mb-4">
+                    <h3 className="mb-0" style={{ color: 'var(--dark-green)' }}>
+                        Crear Cuenta
+                    </h3>
+                    <button 
+                        onClick={onClose}
+                        className="btn-close"
+                        style={{ fontSize: '1.2rem' }}
+                    ></button>
+                </div>
+
+                {errorMsg && (
+                    <div 
+                        className={`alert ${errorMsg.includes('success:') ? 'alert-success' : 'alert-danger'} mb-3`}
+                        role="alert"
+                    >
+                        {errorMsg.replace('success: ', '')}
+                    </div>
+                )}
+
+                <div className="row">
+                    <div className="col-md-6 mb-3">
+                        <input type="text" className="form-control form-control-custom" placeholder="Nombre (opcional)" value={formData.first_name} 
+                            onChange={(e) => handleInputChange('first_name', e.target.value)} disabled={isLoading}/>
+                    </div>
+                    <div className="col-md-6 mb-3">
+                        <input type="text"  className="form-control form-control-custom" placeholder="Apellido (opcional)"
+                            value={formData.last_name}  onChange={(e) => handleInputChange('last_name', e.target.value)} disabled={isLoading} />
+                    </div>
+                </div>
+
+                <div className="mb-3">
+                    <input type="text" className="form-control form-control-custom" placeholder="Nombre de Usuario *" minLength="3" maxLength="20"
+                        value={formData.username}  onChange={(e) => handleInputChange('username', e.target.value)}disabled={isLoading} required/>
+                </div>
+
+                <div className="mb-3">
+                    <input type="email" className="form-control form-control-custom" placeholder="Correo Electrónico *" value={formData.email} 
+                        onChange={(e) => handleInputChange('email', e.target.value)} disabled={isLoading} required />
+                </div>
+
+                <div className="row">
+                    <div className="col-md-6 mb-3">
+                        <input type="password" className="form-control form-control-custom"placeholder="Contraseña *"minLength="8" maxLength="15"
+                            value={formData.password} onChange={(e) => handleInputChange('password', e.target.value)} disabled={isLoading} required/>
+                    </div>
+                    <div className="col-md-6 mb-3">
+                        <input type="password"  className="form-control form-control-custom" placeholder="Confirmar Contraseña *" value={formData.password_confirm} 
+                            onChange={(e) => handleInputChange('password_confirm', e.target.value)} disabled={isLoading}required/>
+                    </div>
+                </div>
+                <button className="btn btn-primary-custom w-100 mb-3"onClick={handleRegistro}disabled={isLoading}>
+                    {isLoading ? 'Registrando...' : 'Crear Cuenta'}
+                </button>
+                <div className="text-center">
+                    <small className="text-muted">
+                        Al registrarte, aceptas nuestros términos y condiciones
+                    </small>
+                </div>
+            </div>
+        </>
     )
 }
 

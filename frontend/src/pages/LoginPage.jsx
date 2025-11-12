@@ -1,68 +1,119 @@
 import React, { useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext.jsx'
+import { useNavigate } from 'react-router-dom'
+import RegisterComponent from '../components/RegisterComponent.jsx'
 
 function LoginPage() {
     const [user, setUser] = useState('')
     const [password, setPassword] = useState('')
     const [errorMsg, setErrorMsg] = useState('')
+    const [showRegister, setShowRegister] = useState(false)
     const navigate = useNavigate()
     const { login } = useAuth()
 
     const handleInvitado = () => {
         localStorage.setItem(
             "logueado",
-                JSON.stringify({
+            JSON.stringify({
                 identificacion: "invitado",
                 usuario: "Invitado",
                 admin: false
             })
         )
-        navigate('/LobbyPage')
+        navigate('/forum')
     }
     const handleLogin = async () => {
-            if (!user || !password) {
-                setErrorMsg("Por favor llena todos los espacios")
-                return
-            } try {
-            const result = await login({ username: user, password: password })
-            if (result.success) {
-                localStorage.setItem(
-                    "logueado",
-                    JSON.stringify({
-                    identificacion: result.user.id,
-                    usuario: result.user.username,
-                    admin: result.user.role === 'admin' || result.user.role === 'true_admin'
+        if (!user || !password) {
+            setErrorMsg("Por favor llena todos los espacios")
+            return
+        }
+        try {
+            const userData = await login(user, password)
+            
+            localStorage.setItem(
+                "logueado",
+                JSON.stringify({
+                    identificacion: userData.id || "user",
+                    usuario: userData.username || user,
+                    admin: userData.role === 'admin' || userData.role === 'true_admin'
                 })
             )  
             setUser('')
             setPassword('')
-            navigate('/LobbyPage')
+            navigate('/forum')
             console.log("Bienvenido")
-            } else {
-                setErrorMsg(result.error)
-            }
-            }catch(error) {
-                setErrorMsg("Error al iniciar sesión")
+        } catch(error) {
+            setErrorMsg(error.message || "Error al iniciar sesión")
         }
     }
-  return (
-    <div className='loginBody'>
-        <p>Si no tienes una cuenta</p><Link to={"/RegisterPage"}><h3>Registrate</h3></Link>
-        <br /><br />
-        <h3>Iniciar Sesion</h3>
-        <br />
-        <div className='inputGroup'>
-            <input type="text" placeholder='Usuario' value={user} onChange={(e) => setUser(e.target.value)} />
-            <br /><br />
-            <input type="password" placeholder='Contraseña' value={password} onChange={(e) => setPassword(e.target.value)} />
-            <br /><br />
+
+    return (
+        <div className="min-vh-100 d-flex align-items-center justify-content-center p-3">
+
+            <div className="position-absolute top-0 start-0 w-100 h-100" 
+                    style={{
+                        background: 'linear-gradient(135deg, var(--light-green) 0%, var(--olivine) 100%)'
+                    }}>
+            </div>
+
+            <div className="card shadow-lg border-0 position-relative" 
+                    style={{
+                        backgroundColor: 'var(--tea-green)',
+                        border: '3px solid var(--asparagus)',
+                        borderRadius: '20px',
+                        maxWidth: '400px',
+                        width: '100%'
+                    }}>
+                <div className="card-body p-4 text-center">
+
+                    <div className="mb-4">
+                        <h1 className="fw-bold" style={{ color: 'var(--dark-green)' }}>
+                            NysForum
+                        </h1>
+                        <p className="mb-0" style={{ color: 'var(--asparagus)' }}>
+                            Bienvenido de vuelta
+                        </p>
+                    </div>
+
+                    {errorMsg && (
+                        <div className="alert alert-danger mb-3" role="alert">
+                            {errorMsg}
+                        </div>
+                    )}
+
+                    <div className="mb-3">
+                        <input type="text" className="form-control form-control-custom mb-3" placeholder="Usuario"value={user} onChange={(e) => setUser(e.target.value)} />
+                        <input type="password" className="form-control form-control-custom" placeholder="Contraseña" value={password} onChange={(e) => setPassword(e.target.value)}
+                        />
+                    </div>
+
+                    <div className="d-grid gap-2 mb-3">
+                        <button className="btn btn-primary-custom"onClick={handleLogin}>
+                            Iniciar Sesión
+                        </button>
+                        <button  className="btn btn-secondary-custom" onClick={handleInvitado}>
+                            Entrar como Invitado
+                        </button>
+                    </div>
+
+                    <div className="text-center">
+                        <p className="mb-2" style={{ color: 'var(--dark-green)' }}>
+                            ¿No tienes una cuenta?
+                        </p>
+                        <button className="btn btn-link p-0 fw-bold"style={{ color: 'var(--asparagus)', textDecoration: 'none' }}onClick={() => setShowRegister(true)}>
+                            Regístrate aquí
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            {showRegister && (
+                <RegisterComponent 
+                    onClose={() => setShowRegister(false)}
+                />
+            )}
         </div>
-        <button className='button' onClick={handleLogin}>Logearse</button>
-        <button className='button' onClick={handleInvitado}>Invitado</button>
-        {errorMsg && <h2>{errorMsg}</h2>}
-    </div>
-  )
+    )
 }
 
 export default LoginPage

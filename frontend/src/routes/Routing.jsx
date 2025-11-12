@@ -1,16 +1,13 @@
 import { Routes, Route, Navigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext.jsx'
 import LoginPage from '../pages/LoginPage.jsx'
-import RegisterComponent from '../components/RegisterComponent.jsx'
 import Forum from '../pages/Forum.jsx'
 
 const ProtectedRoute = ({ children }) => {
   const { isAuthenticated, loading } = useAuth()
-  
   if (loading) {
     return <div>Cargando...</div>
   }
-  
   return isAuthenticated ? children : <Navigate to="/login" replace />
 }
 const PublicRoute = ({ children }) => {
@@ -19,7 +16,6 @@ const PublicRoute = ({ children }) => {
   if (loading) {
     return <div>Cargando...</div>
   }
-  
   return !isAuthenticated ? children : <Navigate to="/forum" replace />
 }
 
@@ -31,14 +27,6 @@ function Routing() {
         element={
           <PublicRoute>
             <LoginPage />
-          </PublicRoute>
-        } 
-      />
-      <Route 
-        path="/register" 
-        element={
-          <PublicRoute>
-            <RegisterComponent />
           </PublicRoute>
         } 
       />

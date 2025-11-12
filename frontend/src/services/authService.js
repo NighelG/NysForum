@@ -1,4 +1,5 @@
 import { apiRequest } from './apiConfig.js';
+
 export const authService = {
     login: async (username, password) => {
         const response = await fetch('http://localhost:8000/api/token/', {
@@ -22,9 +23,18 @@ export const authService = {
         return await response.json();
     },
     register: async (userData) => {
+        const registrationData = {
+            username: userData.username,
+            email: userData.email,
+            password: userData.password,
+            password_confirm: userData.password_confirm,
+            first_name: userData.first_name || "",
+            last_name: userData.last_name || ""
+        };
+        console.log('Intentando registrar usuario:', registrationData);
         return await apiRequest('/users/register/', {
             method: 'POST',
-            body: JSON.stringify(userData)
+            body: JSON.stringify(registrationData)
         });
     },
     getCurrentUser: async () => {
