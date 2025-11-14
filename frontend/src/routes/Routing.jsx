@@ -2,6 +2,7 @@ import { Routes, Route, Navigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext.jsx'
 import LoginPage from '../pages/LoginPage.jsx'
 import Forum from '../pages/Forum.jsx'
+import UserSettingsPage from '../pages/UserSettingsPage.jsx'
 
 const ProtectedRoute = ({ children }) => {
   const { isAuthenticated, loading } = useAuth()
@@ -35,6 +36,14 @@ function Routing() {
         element={
           <ProtectedRoute>
             <Forum />
+          </ProtectedRoute>
+        } 
+      />
+      <Route 
+        path="/settings" 
+        element={
+          <ProtectedRoute>
+            <UserSettingsPage />
           </ProtectedRoute>
         } 
       />

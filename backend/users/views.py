@@ -112,3 +112,17 @@ class AdminProfileDeleteView(APIView):
         if current_role == 'admin':
             return target_role in ['user', 'moderator'] and target_profile.user != current_profile.user
         return False
+    
+class UserDeleteView(APIView):
+    permission_classes = [IsAuthenticated]
+    def delete(self, request, *args, **kwargs):
+        user = request.user
+        username = user.username
+        user.delete()  
+        return Response(
+            {
+                'message': f'Usuario {username} eliminado exitosamente',
+                'deleted_username': username
+            },
+            status=status.HTTP_200_OK
+        )

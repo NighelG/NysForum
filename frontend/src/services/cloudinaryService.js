@@ -11,7 +11,7 @@ export const cloudinaryService = {
         if (!validTypes.includes(file.type)) {
             throw new Error('Tipo de archivo no válido. Solo se permiten imágenes JPEG, PNG, GIF y WebP');
         }
-        const maxSize = 5 * 1024 * 1024; // 5MB en bytes
+        const maxSize = 5 * 1024 * 1024;
         if (file.size > maxSize) {
             throw new Error('La imagen es demasiado grande. El tamaño máximo permitido es 5MB');
         }

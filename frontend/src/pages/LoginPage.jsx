@@ -49,13 +49,11 @@ function LoginPage() {
 
     return (
         <div className="min-vh-100 d-flex align-items-center justify-content-center p-3">
-
             <div className="position-absolute top-0 start-0 w-100 h-100" 
                     style={{
                         background: 'linear-gradient(135deg, var(--light-green) 0%, var(--olivine) 100%)'
                     }}>
             </div>
-
             <div className="card shadow-lg border-0 position-relative" 
                     style={{
                         backgroundColor: 'var(--tea-green)',
@@ -65,28 +63,18 @@ function LoginPage() {
                         width: '100%'
                     }}>
                 <div className="card-body p-4 text-center">
-
                     <div className="mb-4">
-                        <h1 className="fw-bold" style={{ color: 'var(--dark-green)' }}>
-                            NysForum
-                        </h1>
-                        <p className="mb-0" style={{ color: 'var(--asparagus)' }}>
-                            Bienvenido de vuelta
-                        </p>
+                        <img src="/nysforum-high-resolution-logo-transparent.png" alt="NysForum Logo" className="logo-login"/>
                     </div>
-
                     {errorMsg && (
                         <div className="alert alert-danger mb-3" role="alert">
                             {errorMsg}
                         </div>
                     )}
-
                     <div className="mb-3">
                         <input type="text" className="form-control form-control-custom mb-3" placeholder="Usuario"value={user} onChange={(e) => setUser(e.target.value)} />
-                        <input type="password" className="form-control form-control-custom" placeholder="Contraseña" value={password} onChange={(e) => setPassword(e.target.value)}
-                        />
+                        <input type="password" className="form-control form-control-custom" placeholder="Contraseña" value={password} onChange={(e) => setPassword(e.target.value)}/>
                     </div>
-
                     <div className="d-grid gap-2 mb-3">
                         <button className="btn btn-primary-custom"onClick={handleLogin}>
                             Iniciar Sesión
@@ -95,7 +83,6 @@ function LoginPage() {
                             Entrar como Invitado
                         </button>
                     </div>
-
                     <div className="text-center">
                         <p className="mb-2" style={{ color: 'var(--dark-green)' }}>
                             ¿No tienes una cuenta?
@@ -106,7 +93,6 @@ function LoginPage() {
                     </div>
                 </div>
             </div>
-
             {showRegister && (
                 <RegisterComponent 
                     onClose={() => setShowRegister(false)}

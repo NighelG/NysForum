@@ -1,5 +1,5 @@
-import React, { useState } from 'react'
-import { authService } from '../services/authService.js'
+import React, { useState, useEffect } from 'react'
+import { authService } from '../services/authService.js';
 
 function RegisterComponent({ onClose }) {
     const [formData, setFormData] = useState({
@@ -12,6 +12,13 @@ function RegisterComponent({ onClose }) {
     })
     const [errorMsg, setErrorMsg] = useState('')
     const [isLoading, setIsLoading] = useState(false)
+    useEffect(() => {
+        document.body.classList.add('modal-open')
+        
+        return () => {
+            document.body.classList.remove('modal-open')
+        }
+    }, [])
     const handleInputChange = (field, value) => {
         setFormData(prev => ({
             ...prev,
@@ -24,6 +31,7 @@ function RegisterComponent({ onClose }) {
     }
     const validarUsuario = () => formData.username.length >= 3
     const validarPassword = () => formData.password.length >= 8
+
     const handleRegistro = async () => {
         setErrorMsg('')
         if (!formData.username || !formData.email || !formData.password || !formData.password_confirm) {
@@ -46,6 +54,7 @@ function RegisterComponent({ onClose }) {
             setErrorMsg("Por favor ingresa un correo válido de dominio popular (Gmail, Hotmail, Yahoo, etc.)")
             return
         }
+
         setIsLoading(true)
         try {
             console.log('Iniciando proceso de registro...')
@@ -80,13 +89,14 @@ function RegisterComponent({ onClose }) {
 
     return (
         <>
-
             <div className="modal-backdrop" onClick={onClose}></div>
 
-            <div className="modal-container">
-
+            <div 
+                className="modal-container"
+                onClick={(e) => e.stopPropagation()}
+            >
                 <div className="d-flex justify-content-between align-items-center mb-4">
-                    <h3 className="mb-0" style={{ color: 'var(--dark-green)' }}>
+                    <h3 className="mb-0" style={{ color: 'var(--text-dark)' }}> 
                         Crear Cuenta
                     </h3>
                     <button 
@@ -95,37 +105,29 @@ function RegisterComponent({ onClose }) {
                         style={{ fontSize: '1.2rem' }}
                     ></button>
                 </div>
-
                 {errorMsg && (
-                    <div 
-                        className={`alert ${errorMsg.includes('success:') ? 'alert-success' : 'alert-danger'} mb-3`}
-                        role="alert"
-                    >
+                    <div className={`alert ${errorMsg.includes('success:') ? 'alert-success-custom' : 'alert-danger-custom'} mb-3`}role="alert">
                         {errorMsg.replace('success: ', '')}
                     </div>
                 )}
-
                 <div className="row">
                     <div className="col-md-6 mb-3">
                         <input type="text" className="form-control form-control-custom" placeholder="Nombre (opcional)" value={formData.first_name} 
                             onChange={(e) => handleInputChange('first_name', e.target.value)} disabled={isLoading}/>
                     </div>
                     <div className="col-md-6 mb-3">
-                        <input type="text"  className="form-control form-control-custom" placeholder="Apellido (opcional)"
-                            value={formData.last_name}  onChange={(e) => handleInputChange('last_name', e.target.value)} disabled={isLoading} />
+                        <input type="text"  className="form-control form-control-custom" placeholder="Apellido (opcional)"value={formData.last_name}  
+                            onChange={(e) => handleInputChange('last_name', e.target.value)} disabled={isLoading} />
                     </div>
                 </div>
-
                 <div className="mb-3">
                     <input type="text" className="form-control form-control-custom" placeholder="Nombre de Usuario *" minLength="3" maxLength="20"
                         value={formData.username}  onChange={(e) => handleInputChange('username', e.target.value)}disabled={isLoading} required/>
                 </div>
-
                 <div className="mb-3">
                     <input type="email" className="form-control form-control-custom" placeholder="Correo Electrónico *" value={formData.email} 
                         onChange={(e) => handleInputChange('email', e.target.value)} disabled={isLoading} required />
                 </div>
-
                 <div className="row">
                     <div className="col-md-6 mb-3">
                         <input type="password" className="form-control form-control-custom"placeholder="Contraseña *"minLength="8" maxLength="15"

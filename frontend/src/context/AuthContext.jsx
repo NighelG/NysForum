@@ -49,6 +49,17 @@ export const AuthProvider = ({ children }) => {
             throw new Error(error.message || 'Error en el registro')
         }
     }
+    const deleteUser = async () => {
+        try {
+            const result = await authService.deleteUser()
+            localStorage.removeItem('authToken')
+            localStorage.removeItem('logueado')
+            setUser(null)
+            return result
+        } catch (error) {
+            throw new Error(error.message || 'Error al eliminar la cuenta')
+        }
+    }
     const logout = () => {
         localStorage.removeItem('authToken')
         setUser(null)
@@ -58,7 +69,8 @@ export const AuthProvider = ({ children }) => {
             user, 
             login, 
             register, 
-            logout, 
+            logout,
+            deleteUser,
             loading,
             isAuthenticated: !!user 
         }}>

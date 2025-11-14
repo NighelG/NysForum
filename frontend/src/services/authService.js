@@ -45,5 +45,32 @@ export const authService = {
             method: 'POST',
             body: JSON.stringify({ confirmation: true })
         });
+    },
+    deleteUser: async () => {
+        return await apiRequest('/users/userdelete/', {
+            method: 'DELETE'
+        });
+    },
+    updateAccount: async (accountData) => {
+        return await apiRequest('/users/profiles/me/', {
+            method: 'PATCH',
+            body: JSON.stringify(accountData)
+        });
+    },
+
+    deleteProfile: async () => {
+        return await apiRequest('/users/profiles/me/delete/', {
+            method: 'POST',
+            body: JSON.stringify({ confirmation: true })
+        });
+    },
+    
+    deleteUser: async () => {
+        return await apiRequest('/users/userdelete/', {
+            method: 'DELETE'
+        });
     }
+
+    
 };
+
