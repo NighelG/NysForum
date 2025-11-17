@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { useApi } from '../hooks/useApi'
 import { postService } from '../services/postService'
 import CreatePostDrawer from '../components/CreatePostDrawer';
+import '../styles/Forum.css'
 
 const Forum = () => {
     const { loading, error, execute } = useApi()
@@ -60,7 +61,7 @@ const Forum = () => {
 
     return (
         <div className='lobbybody'>
-            <img className='iconoEsquina' src="/img/NysIcon.png" alt="Ny's Forum" />
+            <img className='iconoEsquina' src="/nysforum-high-resolution-logo-transparent(1).png" alt="" />
             <br /><br />
 
             <div>

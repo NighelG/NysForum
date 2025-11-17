@@ -1,0 +1,225 @@
+/* styles/CreatePostDrawer.css */
+/* Overlay - Capa semitransparente */
+.overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(90, 74, 106, 0.5);
+  backdrop-filter: blur(5px);
+  z-index: 1000;
+}
+
+/* Drawer Container */
+.drawer-container {
+  position: fixed;
+  top: 0;
+  right: -400px;
+  width: 400px;
+  height: 100vh;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(20px);
+  box-shadow: -5px 0 30px rgba(92, 72, 106, 0.2);
+  transition: right 0.3s ease-in-out;
+  z-index: 1001;
+  border-left: 1px solid rgba(184, 192, 255, 0.3);
+}
+
+.drawer-container.open {
+  right: 0;
+}
+
+.drawer-content-wrapper {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Header del Drawer */
+.drawer-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 25px;
+  border-bottom: 1px solid rgba(184, 192, 255, 0.3);
+  background: linear-gradient(135deg, var(--mimi-pink), var(--periwinkle-2));
+}
+
+.drawer-header h2 {
+  color: var(--text-dark);
+  margin: 0;
+  font-size: 1.5rem;
+}
+
+.close-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 50%;
+  transition: background 0.3s ease;
+}
+
+.close-btn:hover {
+  background: rgba(255, 255, 255, 0.5);
+}
+
+.tinyIcon {
+  width: 20px;
+  height: 20px;
+}
+
+/* Contenido del Drawer */
+.drawer-content {
+  flex: 1;
+  padding: 25px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  overflow-y: auto;
+}
+
+/* Mensajes de error */
+.error-message {
+  color: #e74c3c;
+  background: rgba(231, 76, 60, 0.1);
+  padding: 12px;
+  border-radius: 8px;
+  border-left: 4px solid #e74c3c;
+  margin: 0;
+  font-size: 14px;
+}
+
+/* Inputs y textarea */
+.input, .textarea {
+  padding: 15px;
+  border: 2px solid var(--periwinkle);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.8);
+  font-size: 14px;
+  outline: none;
+  transition: all 0.3s ease;
+  font-family: inherit;
+}
+
+.textarea {
+  resize: vertical;
+  min-height: 120px;
+}
+
+.input:focus, .textarea:focus {
+  border-color: var(--mauve-2);
+  box-shadow: 0 0 0 3px rgba(200, 182, 255, 0.3);
+  background: rgba(255, 255, 255, 0.95);
+}
+
+/* Sección de medios */
+.media-section {
+  margin: 10px 0;
+}
+
+.file-input-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 20px;
+  background: linear-gradient(135deg, var(--mauve), var(--mauve-2));
+  color: white;
+  border-radius: 25px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.file-input-label:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 15px rgba(200, 182, 255, 0.4);
+}
+
+.file-input {
+  display: none;
+}
+
+.media-preview {
+  margin-top: 15px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.media-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 15px;
+  background: rgba(184, 192, 255, 0.1);
+  border-radius: 8px;
+  border: 1px solid var(--periwinkle);
+}
+
+.media-item span {
+  color: var(--text-dark);
+  font-size: 14px;
+}
+
+.remove-file-btn {
+  background: #e74c3c;
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 24px;
+  height: 24px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  transition: background 0.3s ease;
+}
+
+.remove-file-btn:hover {
+  background: #c0392b;
+}
+
+/* Botón de enviar */
+.submit-btn {
+  background: linear-gradient(135deg, var(--mauve-2), var(--periwinkle));
+  color: white;
+  border: none;
+  padding: 15px 25px;
+  border-radius: 25px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-top: 10px;
+}
+
+.submit-btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(184, 192, 255, 0.6);
+}
+
+.submit-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* Responsive */
+@media (max-width: 480px) {
+  .drawer-container {
+    width: 100vw;
+    right: -100vw;
+  }
+  
+  .drawer-container.open {
+    right: 0;
+  }
+  
+  .drawer-content {
+    padding: 20px;
+  }
+}

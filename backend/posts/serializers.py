@@ -44,7 +44,7 @@ class PostListSerializer(serializers.ModelSerializer):
         request = self.context.get('request')
         if request and request.user.is_authenticated:
             if hasattr(request.user, 'profile'):
-                reaction = obj.reactionpost_set.filter(
+                reaction = obj.reactions.filter(
                     profile=request.user.profile
                 ).first()
                 return reaction.type if reaction else None
@@ -94,4 +94,37 @@ class PostCreateSerializer(serializers.ModelSerializer):
         if category_ids:
             categories = Category.objects.filter(id__in=category_ids)
             post.categories.set(categories)
+        return post
+    
+
+class PostMediaCreateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = PostMedia
+        fields = ['file', 'media_type']
+
+class PostCreateSerializer(serializers.ModelSerializer):
+    category_ids = serializers.ListField(
+        child=serializers.IntegerField(),
+        write_only=True,
+        required=False,
+        allow_empty=True
+    )
+    media_files = PostMediaCreateSerializer(many=True, required=False, write_only=True)
+    
+    class Meta:
+        model = Post
+        fields = ['title', 'content', 'category_ids', 'media_files']
+    
+    def create(self, validated_data):
+        media_files_data = validated_data.pop('media_files', [])
+        category_ids = validated_data.pop('category_ids', [])
+        
+        post = Post.objects.create(**validated_data)
+        for media_data in media_files_data:
+            PostMedia.objects.create(post=post, **media_data)
+
+        if category_ids:
+            categories = Category.objects.filter(id__in=category_ids)
+            post.categories.set(categories)
+        
         return post

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react'
-import { authService } from '../services/authService.js';
+import { authService } from '../services/authService.js'
+import '../styles/CreatePostDrawer.css'
 
 function RegisterComponent({ onClose }) {
     const [formData, setFormData] = useState({

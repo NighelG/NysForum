@@ -1,0 +1,241 @@
+/* styles/Forum.css */
+.lobbybody {
+  background: linear-gradient(135deg, var(--mimi-pink) 0%, var(--periwinkle-2) 100%);
+  min-height: 100vh;
+  padding: 20px;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  position: relative;
+}
+
+/* Header con logo */
+.iconoEsquina {
+  width: 120px;
+  height: auto;
+  position: absolute;
+  top: 20px;
+  left: 20px;
+}
+
+/* Barra de búsqueda y filtros */
+.lobbybody > div:first-of-type {
+  display: flex;
+  gap: 15px;
+  align-items: center;
+  justify-content: center;
+  margin: 80px auto 30px;
+  max-width: 600px;
+}
+
+.search {
+  padding: 12px 20px;
+  border: 2px solid var(--periwinkle);
+  border-radius: 25px;
+  background: rgba(255, 255, 255, 0.9);
+  font-size: 14px;
+  width: 300px;
+  outline: none;
+  transition: all 0.3s ease;
+}
+
+.search:focus {
+  border-color: var(--mauve-2);
+  box-shadow: 0 0 0 3px rgba(200, 182, 255, 0.3);
+}
+
+select {
+  padding: 12px 15px;
+  border: 2px solid var(--periwinkle);
+  border-radius: 25px;
+  background: rgba(255, 255, 255, 0.9);
+  color: var(--text-dark);
+  font-size: 14px;
+  outline: none;
+  cursor: pointer;
+}
+
+/* Sección de crear nueva discusión */
+.lobbybody > div:nth-of-type(2) {
+  text-align: center;
+  margin-bottom: 30px;
+}
+
+.lobbybody > div:nth-of-type(2) h2 {
+  color: var(--text-dark);
+  margin-bottom: 15px;
+  font-size: 1.5rem;
+}
+
+.button {
+  background: linear-gradient(135deg, var(--mauve-2), var(--periwinkle));
+  border: none;
+  border-radius: 50%;
+  width: 60px;
+  height: 60px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(184, 192, 255, 0.4);
+}
+
+.button:hover {
+  transform: scale(1.1);
+  box-shadow: 0 6px 20px rgba(184, 192, 255, 0.6);
+}
+
+.tinymedium {
+  width: 30px;
+  height: 30px;
+  filter: brightness(0) invert(1);
+}
+
+/* Título de discusiones */
+.lobbybody > p {
+  text-align: center;
+  color: var(--text-dark);
+  font-size: 1.8rem;
+  font-weight: bold;
+  margin: 20px 0;
+}
+
+/* Contenedor de posts */
+.posts-container {
+  max-width: 600px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+/* Tarjetas de discusión - Estilo Twitter/Facebook */
+.discussion-card {
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 16px;
+  padding: 20px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border: 1px solid rgba(184, 192, 255, 0.3);
+  backdrop-filter: blur(10px);
+}
+
+.discussion-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 30px rgba(92, 72, 106, 0.15);
+  border-color: var(--mauve);
+}
+
+/* Información de usuario */
+.user-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 15px;
+}
+
+.profile-icon {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid var(--periwinkle);
+}
+
+.user-details {
+  display: flex;
+  flex-direction: column;
+}
+
+.user-name {
+  font-weight: bold;
+  color: var(--text-dark);
+  font-size: 16px;
+}
+
+.user-details span:last-child {
+  color: var(--text-light);
+  font-size: 12px;
+}
+
+/* Contenido del post */
+.discussion-title-container h3 {
+  color: var(--text-dark);
+  margin: 0 0 12px 0;
+  font-size: 18px;
+  line-height: 1.4;
+}
+
+/* Estadísticas del post */
+.post-stats {
+  display: flex;
+  gap: 20px;
+  margin: 15px 0;
+  padding-top: 15px;
+  border-top: 1px solid rgba(184, 192, 255, 0.3);
+}
+
+.post-stats span {
+  color: var(--text-light);
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+/* Categorías */
+.post-categories {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.category-tag {
+  background: linear-gradient(135deg, var(--mauve), var(--mauve-2));
+  color: white;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+/* Estados de carga y error */
+.lobbybody > div:first-child {
+  text-align: center;
+  padding: 40px;
+  color: var(--text-dark);
+}
+
+/* Mensaje sin resultados */
+.posts-container > p {
+  text-align: center;
+  color: var(--text-light);
+  font-style: italic;
+  padding: 40px;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .lobbybody {
+    padding: 15px;
+  }
+  
+  .iconoEsquina {
+    position: relative;
+    top: 0;
+    left: 0;
+    margin-bottom: 20px;
+  }
+  
+  .lobbybody > div:first-of-type {
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 20px;
+  }
+  
+  .search {
+    width: 100%;
+    max-width: 300px;
+  }
+  
+  .posts-container {
+    padding: 0 10px;
+  }
+}

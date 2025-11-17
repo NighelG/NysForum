@@ -21,10 +21,10 @@ class Post(models.Model):
     updated_at = models.DateTimeField(auto_now=True) 
     @property
     def likes_count(self):
-        return self.reactionpost_set.filter(type='like').count()
+        return self.reactions.filter(type='like').count()
     @property
     def dislikes_count(self):
-        return self.reactionpost_set.filter(type='dislike').count()
+        return self.reactions.filter(type='dislike').count()
     @property
     def reports_count(self):
         return self.reports.count()
