@@ -18,6 +18,8 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 from datetime import timedelta
 
+import cloudinary
+
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
@@ -36,6 +38,14 @@ CORS_ALLOWED_ORIGINS = [
 
 CORS_ALLOW_ALL_ORIGINS = True
 CORS_ALLOW_CREDENTIALS = True
+
+
+cloudinary.config(
+    cloud_name="mediaflows_c6f4631c-8553-43a4-8ba8-6d53379c3186",
+    api_key="999281782413122",
+    api_secret="3wtbDTMyKjNRGLNi4uxtN-vKpVo"
+)
+
 
 # Application definition
 

@@ -29,7 +29,6 @@ function LoginPage() {
         }
         try {
             const userData = await login(user, password)
-            
             localStorage.setItem(
                 "logueado",
                 JSON.stringify({

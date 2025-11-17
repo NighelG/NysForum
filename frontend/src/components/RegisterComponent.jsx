@@ -54,7 +54,6 @@ function RegisterComponent({ onClose }) {
             setErrorMsg("Por favor ingresa un correo válido de dominio popular (Gmail, Hotmail, Yahoo, etc.)")
             return
         }
-
         setIsLoading(true)
         try {
             console.log('Iniciando proceso de registro...')
@@ -90,11 +89,7 @@ function RegisterComponent({ onClose }) {
     return (
         <>
             <div className="modal-backdrop" onClick={onClose}></div>
-
-            <div 
-                className="modal-container"
-                onClick={(e) => e.stopPropagation()}
-            >
+            <div className="modal-container"onClick={(e) => e.stopPropagation()}>
                 <div className="d-flex justify-content-between align-items-center mb-4">
                     <h3 className="mb-0" style={{ color: 'var(--text-dark)' }}> 
                         Crear Cuenta

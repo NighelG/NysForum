@@ -12,7 +12,11 @@ export const postService = {
     createPost: async (postData) => {
         return await apiRequest('/posts/', {
             method: 'POST',
-            body: JSON.stringify(postData)
+            body: JSON.stringify({
+                title: postData.title,
+                content: postData.content,
+                category_ids: postData.categoryIds || []
+            })
         });
     },
 

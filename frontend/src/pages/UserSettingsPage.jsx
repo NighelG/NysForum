@@ -1,126 +1,126 @@
-import React, { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { authService } from '../services/authService';
+import React, { useEffect, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { authService } from '../services/authService'
 
 function UserSettingsPage() {
-    const navigate = useNavigate();
-    const [user, setUser] = useState(null);
-    const [activeSection, setActiveSection] = useState('profile');
-    const [loading, setLoading] = useState(false);
-    const [messages, setMessages] = useState({ error: '', success: '' });
+    const navigate = useNavigate()
+    const [user, setUser] = useState(null)
+    const [activeSection, setActiveSection] = useState('profile')
+    const [loading, setLoading] = useState(false)
+    const [messages, setMessages] = useState({ error: '', success: '' })
     const [formData, setFormData] = useState({
         avatar: '',
         bio: '',
         username: '',
         email: ''
-    });
+    })
     useEffect(() => {
-        loadUser();
-    }, []);
+        loadUser()
+    }, [])
     const loadUser = async () => {
         try {
-            const userData = await authService.getCurrentUser();
-            setUser(userData);
+            const userData = await authService.getCurrentUser()
+            setUser(userData)
             setFormData({
                 avatar: userData.avatar || '',
                 bio: userData.bio || '',
                 username: userData.username || '',
                 email: userData.email || ''
-            });
+            })
         } catch (error) {
-            setMessages({ error: 'Error cargando datos del usuario' });
+            setMessages({ error: 'Error cargando datos del usuario' })
         }
-    };
+    }
     function validarCorreo(correo) {
-        const dirrecPopular = /^[a-zA-Z0-9._%+-]+@(gmail\.com|googlemail\.com|hotmail\.com|outlook\.com|live\.com|yahoo\.com|yahoo\.es)$/i;
-        return dirrecPopular.test(correo);
+        const dirrecPopular = /^[a-zA-Z0-9._%+-]+@(gmail\.com|googlemail\.com|hotmail\.com|outlook\.com|live\.com|yahoo\.com|yahoo\.es)$/i
+        return dirrecPopular.test(correo)
     }
     const updateProfile = async () => {
-        setLoading(true);
-        setMessages({ error: '', success: '' });
+        setLoading(true)
+        setMessages({ error: '', success: '' })
         try {
-            const updateData = {};
-            if (formData.avatar) updateData.avatar = formData.avatar;
-            if (formData.bio) updateData.bio = formData.bio;
+            const updateData = {}
+            if (formData.avatar) updateData.avatar = formData.avatar
+            if (formData.bio) updateData.bio = formData.bio
 
             if (Object.keys(updateData).length === 0) {
-                setMessages({ error: 'No hay cambios para guardar' });
-                setLoading(false);
-                return;
+                setMessages({ error: 'No hay cambios para guardar' })
+                setLoading(false)
+                return
             }
-            const updatedUser = await authService.updateProfile(updateData);
-            setMessages({ success: 'Perfil actualizado correctamente' });
-            setUser(updatedUser);
+            const updatedUser = await authService.updateProfile(updateData)
+            setMessages({ success: 'Perfil actualizado correctamente' })
+            setUser(updatedUser)
         } catch (error) {
-            setMessages({ error: error.message });
+            setMessages({ error: error.message })
         }
-        setLoading(false);
-    };
+        setLoading(false)
+    }
     const updateAccount = async () => {
-        setLoading(true);
-        setMessages({ error: '', success: '' });
+        setLoading(true)
+        setMessages({ error: '', success: '' })
         try {
             if (!validarCorreo(formData.email)) {
-                setMessages({ error: 'Por favor ingresa un correo válido' });
-                setLoading(false);
-                return;
+                setMessages({ error: 'Por favor ingresa un correo válido' })
+                setLoading(false)
+                return
             }
-            const updateData = {};
+            const updateData = {}
             if (formData.username && formData.username !== user.username) {
-                updateData.username = formData.username;
+                updateData.username = formData.username
             }
             if (formData.email && formData.email !== user.email) {
-                updateData.email = formData.email;
+                updateData.email = formData.email
             }
             if (Object.keys(updateData).length === 0) {
-                setMessages({ error: 'No hay cambios para guardar' });
-                setLoading(false);
-                return;
+                setMessages({ error: 'No hay cambios para guardar' })
+                setLoading(false)
+                return
             }
-            const updatedUser = await authService.updateAccount(updateData);
-            setMessages({ success: 'Cuenta actualizada correctamente' });
-            setUser(updatedUser);
+            const updatedUser = await authService.updateAccount(updateData)
+            setMessages({ success: 'Cuenta actualizada correctamente' })
+            setUser(updatedUser)
         } catch (error) {
-            setMessages({ error: error.message });
+            setMessages({ error: error.message })
         }
-        setLoading(false);
-    };
+        setLoading(false)
+    }
     const deleteAccount = async () => {
         if (!window.confirm('¿Estás seguro de que quieres eliminar tu cuenta? Esta acción no se puede deshacer.')) {
-            return;
+            return
         }
-        setLoading(true);
+        setLoading(true)
         try {
-            await authService.deleteUser();
-            localStorage.removeItem('authToken');
-            localStorage.removeItem('refreshToken');
-            localStorage.removeItem('logueado');
-            setMessages({ success: 'Cuenta eliminada correctamente' });
+            await authService.deleteUser()
+            localStorage.removeItem('authToken')
+            localStorage.removeItem('refreshToken')
+            localStorage.removeItem('logueado')
+            setMessages({ success: 'Cuenta eliminada correctamente' })
             setTimeout(() => {
-                navigate('/login');
-            }, 2000);
+                navigate('/login')
+            }, 2000)
         } catch (error) {
-            setMessages({ error: error.message });
-            setLoading(false);
+            setMessages({ error: error.message })
+            setLoading(false)
         }
-    };
+    }
     const handleImageUpload = (e) => {
-        const file = e.target.files[0];
-        if (!file) return;
+        const file = e.target.files[0]
+        if (!file) return
         if (!file.type.startsWith('image/')) {
-            setMessages({ error: 'El archivo debe ser una imagen' });
-            return;
+            setMessages({ error: 'El archivo debe ser una imagen' })
+            return
         }
         if (file.size > 5 * 1024 * 1024) {
-            setMessages({ error: 'La imagen no debe pesar más de 5MB' });
-            return;
+            setMessages({ error: 'La imagen no debe pesar más de 5MB' })
+            return
         }
-        const reader = new FileReader();
+        const reader = new FileReader()
         reader.onload = (e) => {
-            setFormData(prev => ({ ...prev, avatar: e.target.result }));
-        };
-        reader.readAsDataURL(file);
-    };
+            setFormData(prev => ({ ...prev, avatar: e.target.result }))
+        }
+        reader.readAsDataURL(file)
+    }
     if (!user) {
         return (
             <div className="user-settings-page">
@@ -128,9 +128,9 @@ function UserSettingsPage() {
                     <p>Cargando información del usuario...</p>
                 </div>
             </div>
-        );
+        )
     }
-
+    
     return (
         <div className="user-settings-page">
             <div className="settings-container">
@@ -160,7 +160,7 @@ function UserSettingsPage() {
                         <div className="settings-section">
                             <h2>Información del Perfil</h2>
                             <div className="profile-info">
-                                <img src={user.avatar || "/img/defaultPFP.jpg"} alt="Avatar" className="profile-picture"/>
+                                <img src={user.avatar || "/defaultPFP.jpg"} alt="Avatar" className="profile-picture"/>
                                 <div className="profile-details">
                                     <h3>{user.username}</h3>
                                     <p className="profile-bio">{user.bio || "Sin biografía"}</p>
@@ -229,7 +229,7 @@ function UserSettingsPage() {
                 </div>
             </div>
         </div>
-    );
+    )
 }
 
-export default UserSettingsPage;
+export default UserSettingsPage
