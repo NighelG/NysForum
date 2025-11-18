@@ -1,5 +1,4 @@
-/* styles/CreatePostDrawer.css */
-/* Overlay - Capa semitransparente */
+
 .overlay {
   position: fixed;
   top: 0;
@@ -11,7 +10,6 @@
   z-index: 1000;
 }
 
-/* Drawer Container */
 .drawer-container {
   position: fixed;
   top: 0;
@@ -36,7 +34,6 @@
   flex-direction: column;
 }
 
-/* Header del Drawer */
 .drawer-header {
   display: flex;
   justify-content: space-between;
@@ -70,7 +67,6 @@
   height: 20px;
 }
 
-/* Contenido del Drawer */
 .drawer-content {
   flex: 1;
   padding: 25px;
@@ -80,7 +76,6 @@
   overflow-y: auto;
 }
 
-/* Mensajes de error */
 .error-message {
   color: #e74c3c;
   background: rgba(231, 76, 60, 0.1);
@@ -91,7 +86,6 @@
   font-size: 14px;
 }
 
-/* Inputs y textarea */
 .input, .textarea {
   padding: 15px;
   border: 2px solid var(--periwinkle);
@@ -114,7 +108,6 @@
   background: rgba(255, 255, 255, 0.95);
 }
 
-/* Sección de medios */
 .media-section {
   margin: 10px 0;
 }
@@ -183,7 +176,6 @@
   background: #c0392b;
 }
 
-/* Botón de enviar */
 .submit-btn {
   background: linear-gradient(135deg, var(--mauve-2), var(--periwinkle));
   color: white;
@@ -208,7 +200,6 @@
   transform: none;
 }
 
-/* Responsive */
 @media (max-width: 480px) {
   .drawer-container {
     width: 100vw;

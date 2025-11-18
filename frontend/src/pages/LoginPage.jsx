@@ -9,7 +9,7 @@ function LoginPage() {
     const [errorMsg, setErrorMsg] = useState('')
     const [showRegister, setShowRegister] = useState(false)
     const navigate = useNavigate()
-    const { login } = useAuth()
+    const { login, loginAsGuest } = useAuth()
 
     const handleInvitado = () => {
         localStorage.setItem(
@@ -75,11 +75,13 @@ function LoginPage() {
                         <input type="password" className="form-control form-control-custom" placeholder="Contraseña" value={password} onChange={(e) => setPassword(e.target.value)}/>
                     </div>
                     <div className="d-grid gap-2 mb-3">
-                        <button className="btn btn-primary-custom"onClick={handleLogin}>
+                        <button className="btn btn-primary-custom" onClick={handleLogin}>
                             Iniciar Sesión
                         </button>
-                        <button  className="btn btn-secondary-custom" onClick={handleInvitado}>
-                            Entrar como Invitado
+                        <button className="btn btn-primary-custom" onClick={() => {
+                            loginAsGuest() 
+                            navigate('/forum')}}>
+                            Entrar como invitado
                         </button>
                     </div>
                     <div className="text-center">

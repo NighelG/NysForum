@@ -5,19 +5,29 @@ import Forum from '../pages/Forum.jsx'
 import UserSettingsPage from '../pages/UserSettingsPage.jsx'
 
 const ProtectedRoute = ({ children }) => {
-  const { isAuthenticated, loading } = useAuth()
-  if (loading) {
-    return <div>Cargando...</div>
-  }
-  return isAuthenticated ? children : <Navigate to="/login" replace />
-}
-const PublicRoute = ({ children }) => {
-  const { isAuthenticated, loading } = useAuth()
+  const { isAuthenticated, loading, user } = useAuth()
   
   if (loading) {
     return <div>Cargando...</div>
   }
-  return !isAuthenticated ? children : <Navigate to="/forum" replace />
+
+  return isAuthenticated && user && !user.isGuest ? children : <Navigate to="/login" replace />
+}
+const PublicRoute = ({ children }) => {
+  const { isAuthenticated, loading, user } = useAuth()
+  
+  if (loading) {
+    return <div>Cargando...</div>
+  }
+  return (isAuthenticated && user && !user.isGuest) ? <Navigate to="/forum" replace /> : children
+}
+const GuestRoute = ({ children }) => {
+  const { isAuthenticated, loading, user } = useAuth()
+  
+  if (loading) {
+    return <div>Cargando...</div>
+  }
+  return isAuthenticated ? children : <Navigate to="/login" replace />
 }
 
 function Routing() {
@@ -34,9 +44,9 @@ function Routing() {
       <Route 
         path="/forum" 
         element={
-          <ProtectedRoute>
+          <GuestRoute>
             <Forum />
-          </ProtectedRoute>
+          </GuestRoute>
         } 
       />
       <Route 
@@ -47,6 +57,14 @@ function Routing() {
           </ProtectedRoute>
         } 
       />
+{/*       <Route 
+        path="/posts/:id" 
+        element={
+          <GuestRoute>
+            <PostDetailPage />
+          </GuestRoute>
+        } 
+      /> */}
       <Route path="/" element={<Navigate to="/forum" replace />} />
       <Route path="*" element={<div>Página no encontrada - 404</div>} />
     </Routes>

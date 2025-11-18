@@ -1,9 +1,13 @@
 import React, { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { authService } from '../services/authService'
+import { useAuth } from '../context/AuthContext'
+import Sidebar from '../components/SideBar'
+import '../styles/UserSettingsPage.css'
 
 function UserSettingsPage() {
     const navigate = useNavigate()
+    const { logout } = useAuth()
     const [user, setUser] = useState(null)
     const [activeSection, setActiveSection] = useState('profile')
     const [loading, setLoading] = useState(false)
@@ -14,9 +18,14 @@ function UserSettingsPage() {
         username: '',
         email: ''
     })
+
+    const sections = ['profile', 'personalization', 'account', 'danger']
+    const activeIndex = sections.indexOf(activeSection)
+
     useEffect(() => {
         loadUser()
     }, [])
+
     const loadUser = async () => {
         try {
             const userData = await authService.getCurrentUser()
@@ -31,10 +40,17 @@ function UserSettingsPage() {
             setMessages({ error: 'Error cargando datos del usuario' })
         }
     }
+
+    const handleLogout = () => {
+        logout()
+        navigate('/login')
+    }
+
     function validarCorreo(correo) {
         const dirrecPopular = /^[a-zA-Z0-9._%+-]+@(gmail\.com|googlemail\.com|hotmail\.com|outlook\.com|live\.com|yahoo\.com|yahoo\.es)$/i
         return dirrecPopular.test(correo)
     }
+
     const updateProfile = async () => {
         setLoading(true)
         setMessages({ error: '', success: '' })
@@ -56,6 +72,7 @@ function UserSettingsPage() {
         }
         setLoading(false)
     }
+
     const updateAccount = async () => {
         setLoading(true)
         setMessages({ error: '', success: '' })
@@ -85,6 +102,7 @@ function UserSettingsPage() {
         }
         setLoading(false)
     }
+
     const deleteAccount = async () => {
         if (!window.confirm('¿Estás seguro de que quieres eliminar tu cuenta? Esta acción no se puede deshacer.')) {
             return
@@ -104,6 +122,7 @@ function UserSettingsPage() {
             setLoading(false)
         }
     }
+
     const handleImageUpload = (e) => {
         const file = e.target.files[0]
         if (!file) return
@@ -121,6 +140,7 @@ function UserSettingsPage() {
         }
         reader.readAsDataURL(file)
     }
+
     if (!user) {
         return (
             <div className="user-settings-page">
@@ -133,58 +153,71 @@ function UserSettingsPage() {
     
     return (
         <div className="user-settings-page">
+            <Sidebar />
             <div className="settings-container">
-                <div className="settings-sidebar">
-                    <h3>Configuración</h3>
-                    <button className={`sidebar-option ${activeSection === "profile" ? "active" : ""}`}onClick={() => setActiveSection("profile")}>
-                        Perfil
-                    </button>
-                    <button className={`sidebar-option ${activeSection === "personalization" ? "active" : ""}`} onClick={() => setActiveSection("personalization")}>
-                        Personalización
-                    </button>
-                    <button className={`sidebar-option ${activeSection === "account" ? "active" : ""}`} onClick={() => setActiveSection("account")}>
-                        Cuenta
-                    </button>
-                    <button className={`sidebar-option danger ${activeSection === "danger" ? "active" : ""}`}onClick={() => setActiveSection("danger")}>
-                        Zona Peligrosa
-                    </button>
-                </div>
+
+                <header className="settings-header">
+                    <nav className="settings-tabs">
+                        <button className={`settings-tab ${activeSection === "profile" ? "active" : ""}`}onClick={() => setActiveSection("profile")} >
+                            Perfil
+                        </button>
+                        <button className={`settings-tab ${activeSection === "personalization" ? "active" : ""}`}onClick={() => setActiveSection("personalization")}>
+                            Personalización
+                        </button>
+                        <button className={`settings-tab ${activeSection === "account" ? "active" : ""}`}onClick={() => setActiveSection("account")}>
+                            Cuenta
+                        </button>
+                        <button className={`settings-tab danger ${activeSection === "danger" ? "active" : ""}`}onClick={() => setActiveSection("danger")}>
+                            Zona Peligrosaosa
+                        </button>
+                    </nav>
+                </header>
+
                 <div className="settings-content">
-                    {messages.error && (
-                        <div className="alert alert-error">{messages.error}</div>
-                    )}
-                    {messages.success && (
-                        <div className="alert alert-success">{messages.success}</div>
-                    )}
-                    {activeSection === 'profile' && (
+                    <div className="settings-carousel"style={{ transform: `translateX(-${activeIndex * 100}%)` }}>
                         <div className="settings-section">
                             <h2>Información del Perfil</h2>
+                            {messages.error && (
+                                <div className="alert alert-error">{messages.error}</div>
+                            )}
+                            {messages.success && (
+                                <div className="alert alert-success">{messages.success}</div>
+                            )}
                             <div className="profile-info">
                                 <img src={user.avatar || "/defaultPFP.jpg"} alt="Avatar" className="profile-picture"/>
                                 <div className="profile-details">
                                     <h3>{user.username}</h3>
                                     <p className="profile-bio">{user.bio || "Sin biografía"}</p>
                                     <p className="profile-email">{user.email}</p>
-                                    <p className="profile-stats"> Publicaciones: {user.posts_count} | Comentarios: {user.comments_count}</p>
-                                    <p className="profile-join-date"> Miembro desde: {new Date(user.date_joined).toLocaleDateString()}</p>
+                                    <p className="profile-stats">Publicaciones: {user.posts_count} | Comentarios: {user.comments_count}</p>
+                                    <p className="profile-join-date">Miembro desde: {new Date(user.date_joined).toLocaleDateString()}</p>
                                     <p className="profile-role">Rol: {user.role}</p>
                                     <p className="profile-status">Estado: {user.status}</p>
+                                    <div className="logout-section">
+                                        <button className="btn-logout" onClick={handleLogout}>
+                                            Cerrar Sesión
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
                         </div>
-                    )}
-                    {activeSection === 'personalization' && (
+
                         <div className="settings-section">
                             <h2>Personalización</h2>
+                            {messages.error && (
+                                <div className="alert alert-error">{messages.error}</div>
+                            )}
+                            {messages.success && (
+                                <div className="alert alert-success">{messages.success}</div>
+                            )}
                             <div className="form-group">
                                 <label>Avatar</label>
                                 <div className="current-image">
                                     <img src={formData.avatar || user.avatar || "/img/defaultPFP.jpg"} alt="Preview" className="image-preview"/>
                                 </div>
-                                <input type="url" className="form-input"placeholder="URL del avatar" value={formData.avatar} 
-                                    onChange={(e) => setFormData(prev => ({ ...prev, avatar: e.target.value }))} />
+                                <input type="url" className="form-input"placeholder="URL del avatar" value={formData.avatar} onChange={(e) => setFormData(prev => ({ ...prev, avatar: e.target.value }))} />
                                 <p className="form-help">O sube una imagen local:</p>
-                                <input type="file" className="form-input"accept="image/*" onChange={handleImageUpload}  />
+                                <input type="file" className="form-input" accept="image/*" onChange={handleImageUpload} />
                             </div>
                             <div className="form-group">
                                 <label>Biografía</label>
@@ -196,26 +229,35 @@ function UserSettingsPage() {
                                 {loading ? "Guardando..." : "Guardar Cambios"}
                             </button>
                         </div>
-                    )}
-                    {activeSection === 'account' && (
                         <div className="settings-section">
                             <h2>Configuración de la Cuenta</h2>
+                            {messages.error && (
+                                <div className="alert alert-error">{messages.error}</div>
+                            )}
+                            {messages.success && (
+                                <div className="alert alert-success">{messages.success}</div>
+                            )}
                             <div className="form-group">
                                 <label>Nombre de Usuario</label>
-                                <input type="text" className="form-input"value={formData.username} onChange={(e) => setFormData(prev => ({ ...prev, username: e.target.value }))}minLength="3"maxLength="20"/>
+                                <input type="text" className="form-input"value={formData.username} 
+                                    onChange={(e) => setFormData(prev => ({ ...prev, username: e.target.value }))}minLength="3" maxLength="20"/>
                             </div>
                             <div className="form-group">
                                 <label>Correo Electrónico</label>
                                 <input type="email" className="form-input"value={formData.email} onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}/>
                             </div>
-                            <button className="btn-primary" onClick={updateAccount}disabled={loading}>
+                            <button className="btn-primary" onClick={updateAccount} disabled={loading}>
                                 {loading ? "Actualizando..." : "Actualizar Datos"}
                             </button>
                         </div>
-                    )}
-                    {activeSection === 'danger' && (
                         <div className="settings-section danger-section">
                             <h2>Zona Peligrosa</h2>
+                            {messages.error && (
+                                <div className="alert alert-error">{messages.error}</div>
+                            )}
+                            {messages.success && (
+                                <div className="alert alert-success">{messages.success}</div>
+                            )}
                             <div className="danger-warning">
                                 <h3>Eliminar Cuenta</h3>
                                 <p>Esta acción es <strong>irreversible</strong>. Se eliminarán todos tus datos, 
@@ -225,7 +267,7 @@ function UserSettingsPage() {
                                 </button>
                             </div>
                         </div>
-                    )}
+                    </div>
                 </div>
             </div>
         </div>

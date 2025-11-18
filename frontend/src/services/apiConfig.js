@@ -29,16 +29,11 @@ export const apiRequest = async (endpoint, options = {}) => {
         ...options
     };
     try {
-        console.log(`Haciendo petición a: ${url}`);
-        console.log(`Datos enviados:`, options.body);
         const response = await fetch(url, config);
-        console.log(`Status de respuesta: ${response.status}`);
-        console.log(`URL de respuesta: ${response.url}`);
         if (response.status === 204) {
             return null;
         }
         const responseText = await response.text();
-        console.log(`Respuesta cruda:`, responseText);
         if (!response.ok) {
             let errorMessage = `Error ${response.status}: ${response.statusText}`;    
             try {
@@ -65,7 +60,6 @@ export const apiRequest = async (endpoint, options = {}) => {
         }
         
         const result = responseText ? JSON.parse(responseText) : {};
-        console.log(' Respuesta exitosa:', result);
         return result;
         
     } catch (error) {

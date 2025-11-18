@@ -2,16 +2,19 @@ import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useApi } from '../hooks/useApi'
 import { postService } from '../services/postService'
-import CreatePostDrawer from '../components/CreatePostDrawer';
+import CreatePostDrawer from '../components/CreatePostDrawer'
+import Sidebar from '../components/SideBar'
+import { useAuth } from '../context/AuthContext'
 import '../styles/Forum.css'
 
 const Forum = () => {
     const { loading, error, execute } = useApi()
     const [posts, setPosts] = useState([])
     const [searchName, setSearchName] = useState('')
-    const [sortOrder, setSortOrder] = useState('todas')
+    const [sortOrder, setSortOrder] = useState('nuevo')
     const [isDrawerOpen, setIsDrawerOpen] = useState(false)
     const navigate = useNavigate()
+    const { user } = useAuth()
 
     useEffect(() => {
         loadPosts()
@@ -59,29 +62,25 @@ const Forum = () => {
     if (loading) return <div>Cargando publicaciones...</div>
     if (error) return <div>Error: {error}</div>
 
-    return (
+    return (   
         <div className='lobbybody'>
-            <img className='iconoEsquina' src="/nysforum-high-resolution-logo-transparent(1).png" alt="" />
-            <br /><br />
-
             <div>
                 <label>
                     <input className="search" type="search" placeholder='Buscar' value={searchName} onChange={(e) => setSearchName(e.target.value)} />
                 </label>
                 <select value={sortOrder} onChange={(e) => setSortOrder(e.target.value)}>
-                    <option value="todas">---</option>
                     <option value="nuevo">Mas reciente</option>
                     <option value="viejo">Menos reciente</option>
                 </select>
             </div>
-
-            <div>
-                <h2>Iniciar nueva discusión</h2>
-                <button className='button' onClick={() => setIsDrawerOpen(true)}>
-                    <img className='tinymedium' src="/img/discu.png" alt="Nueva discusión" />
-                </button>
-            </div>
-
+            {user && !user.isGuest && (
+                <div className="floating-create-button">
+                    <button className='create-post-fab' onClick={() => setIsDrawerOpen(true)}>
+                        <img className='fab-icon' src="/discu.png" alt="Nueva discusión" />
+                        <span className="fab-text">Crear Publicación</span>
+                    </button>
+                </div>
+            )}
             <br />
             <p>Discusiónes</p>
             <br />
@@ -103,8 +102,8 @@ const Forum = () => {
                                 <div className="post-stats">
                                     <span> + {post.likes_count}</span>
                                     <span> - {post.dislikes_count}</span>
-                                    <span> comentar {post.comments_count}</span>
-                                    <span> vistas {post.views_count}</span>
+                                    <span> Respuestas: {post.comments_count}</span>
+                                    <span> Vistas: {post.views_count}</span>
                                 </div>
                                 {post.categories && post.categories.length > 0 && (
                                     <div className="post-categories">
@@ -118,6 +117,7 @@ const Forum = () => {
                     ))
                 )}
             </div>
+            <Sidebar />
             <CreatePostDrawer 
             isOpen={isDrawerOpen} 
             setIsOpen={setIsDrawerOpen} 

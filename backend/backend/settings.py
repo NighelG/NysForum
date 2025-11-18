@@ -41,9 +41,9 @@ CORS_ALLOW_CREDENTIALS = True
 
 
 cloudinary.config(
-    cloud_name="mediaflows_c6f4631c-8553-43a4-8ba8-6d53379c3186",
-    api_key="999281782413122",
-    api_secret="3wtbDTMyKjNRGLNi4uxtN-vKpVo"
+    cloud_name="",
+    api_key="",
+    api_secret=""
 )
 
 

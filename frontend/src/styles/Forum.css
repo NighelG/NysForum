@@ -1,4 +1,4 @@
-/* styles/Forum.css */
+
 .lobbybody {
   background: linear-gradient(135deg, var(--mimi-pink) 0%, var(--periwinkle-2) 100%);
   min-height: 100vh;
@@ -7,7 +7,6 @@
   position: relative;
 }
 
-/* Header con logo */
 .iconoEsquina {
   width: 120px;
   height: auto;
@@ -16,7 +15,6 @@
   left: 20px;
 }
 
-/* Barra de búsqueda y filtros */
 .lobbybody > div:first-of-type {
   display: flex;
   gap: 15px;
@@ -53,7 +51,6 @@ select {
   cursor: pointer;
 }
 
-/* Sección de crear nueva discusión */
 .lobbybody > div:nth-of-type(2) {
   text-align: center;
   margin-bottom: 30px;
@@ -87,7 +84,6 @@ select {
   filter: brightness(0) invert(1);
 }
 
-/* Título de discusiones */
 .lobbybody > p {
   text-align: center;
   color: var(--text-dark);
@@ -96,7 +92,6 @@ select {
   margin: 20px 0;
 }
 
-/* Contenedor de posts */
 .posts-container {
   max-width: 600px;
   margin: 0 auto;
@@ -105,7 +100,6 @@ select {
   gap: 15px;
 }
 
-/* Tarjetas de discusión - Estilo Twitter/Facebook */
 .discussion-card {
   background: rgba(255, 255, 255, 0.95);
   border-radius: 16px;
@@ -122,7 +116,6 @@ select {
   border-color: var(--mauve);
 }
 
-/* Información de usuario */
 .user-info {
   display: flex;
   align-items: center;
@@ -154,7 +147,6 @@ select {
   font-size: 12px;
 }
 
-/* Contenido del post */
 .discussion-title-container h3 {
   color: var(--text-dark);
   margin: 0 0 12px 0;
@@ -162,7 +154,6 @@ select {
   line-height: 1.4;
 }
 
-/* Estadísticas del post */
 .post-stats {
   display: flex;
   gap: 20px;
@@ -179,7 +170,6 @@ select {
   gap: 5px;
 }
 
-/* Categorías */
 .post-categories {
   display: flex;
   flex-wrap: wrap;
@@ -196,14 +186,12 @@ select {
   font-weight: 500;
 }
 
-/* Estados de carga y error */
 .lobbybody > div:first-child {
   text-align: center;
   padding: 40px;
   color: var(--text-dark);
 }
 
-/* Mensaje sin resultados */
 .posts-container > p {
   text-align: center;
   color: var(--text-light);
@@ -211,7 +199,6 @@ select {
   padding: 40px;
 }
 
-/* Responsive */
 @media (max-width: 768px) {
   .lobbybody {
     padding: 15px;
@@ -238,4 +225,106 @@ select {
   .posts-container {
     padding: 0 10px;
   }
+}
+
+.floating-create-button {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 900;
+}
+
+.create-post-fab {
+    background: linear-gradient(135deg, var(--mauve-2), var(--periwinkle));
+    border: none;
+    border-radius: 25px;
+    padding: 12px 20px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(184, 192, 255, 0.4);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: white;
+    font-weight: 600;
+    font-size: 14px;
+    backdrop-filter: blur(10px);
+    border: 2px solid rgba(255, 255, 255, 0.2);
+}
+
+.create-post-fab:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(184, 192, 255, 0.6);
+}
+
+.create-post-fab:active {
+    transform: translateY(0);
+}
+
+.fab-icon {
+    width: 20px;
+    height: 20px;
+    filter: brightness(0) invert(1);
+}
+
+.fab-text {
+    white-space: nowrap;
+}
+
+.create-post-fab.mini {
+    padding: 12px;
+    border-radius: 50%;
+    width: 44px;
+    height: 44px;
+    justify-content: center;
+}
+
+.create-post-fab.mini .fab-text {
+    display: none;
+}
+
+@media (max-width: 768px) {
+    .floating-create-button {
+        top: 15px;
+        right: 15px;
+    }
+    
+    .create-post-fab {
+        padding: 10px 16px;
+        font-size: 13px;
+    }
+    
+    .create-post-fab.mini {
+        width: 40px;
+        height: 40px;
+        padding: 10px;
+    }
+    
+    .fab-icon {
+        width: 18px;
+        height: 18px;
+    }
+}
+
+@media (max-width: 480px) {
+    .floating-create-button {
+        top: 10px;
+        right: 10px;
+    }
+    
+    .create-post-fab:not(.mini) {
+        padding: 10px;
+        border-radius: 50%;
+        width: 44px;
+        height: 44px;
+    }
+    
+    .create-post-fab:not(.mini) .fab-text {
+        display: none;
+    }
+    
+    .create-post-fab.mini {
+        width: 40px;
+        height: 40px;
+    }
 }

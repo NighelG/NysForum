@@ -166,3 +166,55 @@ h1, h2, h3, h4, h5, h6 {
   width: 180px;
   height: 180px;
 }
+/* En tu index.css o App.css principal */
+body {
+    margin: 0;
+    padding: 0;
+    transition: margin-left 0.3s ease;
+}
+
+.main-content {
+    margin-left: 200px;
+    padding: 20px;
+    min-height: 100vh;
+    box-sizing: border-box;
+    transition: margin-left 0.3s ease;
+}
+
+/* Cuando el sidebar está colapsado */
+.sidebar.collapsed ~ .main-content {
+    margin-left: 60px;
+}
+
+/* Asegurar que los contenedores se ajusten */
+.settings-container,
+.forum-content {
+    max-width: calc(100vw - 240px);
+    margin: 0 auto;
+}
+
+.sidebar.collapsed ~ .main-content .settings-container,
+.sidebar.collapsed ~ .main-content .forum-content {
+    max-width: calc(100vw - 100px);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .main-content {
+        margin-left: 60px;
+    }
+    
+    .sidebar:not(.collapsed) ~ .main-content {
+        margin-left: 200px;
+    }
+    
+    .settings-container,
+    .forum-content {
+        max-width: calc(100vw - 80px);
+    }
+    
+    .sidebar:not(.collapsed) ~ .main-content .settings-container,
+    .sidebar:not(.collapsed) ~ .main-content .forum-content {
+        max-width: calc(100vw - 220px);
+    }
+}
