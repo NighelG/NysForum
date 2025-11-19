@@ -262,9 +262,8 @@ select {
 }
 
 .fab-icon {
-    width: 20px;
-    height: 20px;
-    filter: brightness(0) invert(1);
+    width: 35px;
+    height: 35px;
 }
 
 .fab-text {
@@ -327,4 +326,30 @@ select {
         width: 40px;
         height: 40px;
     }
+}
+
+.nav-icon-img {
+    width: 20px;
+    height: 20px;
+    flex-shrink: 0;
+    object-fit: contain;
+    filter: brightness(0) saturate(100%) invert(18%) sepia(12%) saturate(1234%) hue-rotate(218deg) brightness(93%) contrast(85%);
+    transition: filter 0.3s ease;
+}
+
+.nav-item:hover .nav-icon-img {
+    filter: brightness(0) saturate(100%) invert(18%) sepia(12%) saturate(1234%) hue-rotate(218deg) brightness(73%) contrast(85%);
+}
+
+.nav-item.active .nav-icon-img {
+    filter: brightness(0) saturate(100%) invert(18%) sepia(12%) saturate(1234%) hue-rotate(218deg) brightness(53%) contrast(85%);
+}
+
+.nav-icon-img.hover-effect {
+    filter: brightness(0) saturate(100%) invert(18%) sepia(12%) saturate(1234%) hue-rotate(218deg) brightness(93%) contrast(85%);
+    transition: filter 0.3s ease;
+}
+
+.nav-icon-img.hover-effect:hover {
+    filter: brightness(0) saturate(100%) invert(18%) sepia(12%) saturate(1234%) hue-rotate(218deg) brightness(73%) contrast(85%);
 }

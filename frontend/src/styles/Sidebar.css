@@ -135,8 +135,8 @@
     left: 200px;
     top: 8%;
     transform: translateY(-50%);
-    width: 20px;
-    height: 40px;
+    width: 50px;
+    height: 50px;
     background: linear-gradient(180deg, var(--mimi-pink) 0%, var(--mauve) 100%);
     border: 1px solid var(--periwinkle);
     border-left: none;
@@ -154,7 +154,7 @@
 
 .sidebar-toggle:hover {
     background: rgba(255, 255, 255, 0.3);
-    width: 22px;
+    width: 45px;
 }
 
 .sidebar-toggle.collapsed {
@@ -258,4 +258,30 @@
     .sidebar:not(.collapsed) ~ .main-content {
         margin-left: 180px;
     }
+}
+
+.nav-icon-img {
+    width: 20px;
+    height: 20px;
+    flex-shrink: 0;
+    object-fit: contain;
+    filter: brightness(0) saturate(100%) invert(18%) sepia(12%) saturate(1234%) hue-rotate(218deg) brightness(93%) contrast(85%);
+    transition: filter 0.3s ease;
+}
+
+.nav-item:hover .nav-icon-img {
+    filter: brightness(0) saturate(100%) invert(18%) sepia(12%) saturate(1234%) hue-rotate(218deg) brightness(73%) contrast(85%);
+}
+
+.nav-item.active .nav-icon-img {
+    filter: brightness(0) saturate(100%) invert(18%) sepia(12%) saturate(1234%) hue-rotate(218deg) brightness(53%) contrast(85%);
+}
+
+.nav-icon-img.hover-effect {
+    filter: brightness(0) saturate(100%) invert(18%) sepia(12%) saturate(1234%) hue-rotate(218deg) brightness(93%) contrast(85%);
+    transition: filter 0.3s ease;
+}
+
+.nav-icon-img.hover-effect:hover {
+    filter: brightness(0) saturate(100%) invert(18%) sepia(12%) saturate(1234%) hue-rotate(218deg) brightness(73%) contrast(85%);
 }

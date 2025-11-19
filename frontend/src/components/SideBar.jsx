@@ -8,10 +8,8 @@ function SideBar() {
     const [isCollapsed, setIsCollapsed] = useState(true)
 
     const menuItems = [
-        { id: 'forum', label: 'Foro', path: '/forum',},
-        { id: 'settings', label: 'Configuración', path: '/settings'},
-        { id: 'Placeholder', label: 'Placeholder', path: '#'},
-        { id: 'messPlaceholderages', label: 'Placeholder', path: '#'}
+        { id: 'forum', label: 'Foro', path: '/forum', icon: '/home.png'},
+        { id: 'settings', label: 'Configuración', path: '/settings', icon: '/settings.png'}
     ]
     const handleNavigation = (path) => {
         if (path !== '#') {
@@ -32,7 +30,7 @@ function SideBar() {
                     {menuItems.map((item) => (
                         <button key={item.id} className={`nav-item ${location.pathname === item.path ? 'active' : ''} ${item.path === '#' ? 'disabled' : ''}`}
                         onClick={() => handleNavigation(item.path)} disabled={item.path === '#'} title={isCollapsed ? item.label : ''}>
-                            <span className="nav-icon">{item.icon}</span>
+                                <img src={item.icon} alt={item.label}className="nav-icon-img"/>
                             {!isCollapsed && <span className="nav-label">{item.label}</span>}
                         </button>
                     ))}
@@ -44,7 +42,7 @@ function SideBar() {
                 )}
             </div>
             <button className={`sidebar-toggle ${isCollapsed ? 'collapsed' : ''}`} onClick={toggleSidebar}title={isCollapsed ? "Expandir sidebar" : "Colapsar sidebar"} >
-                {isCollapsed ? '▶' : '◀'}
+                {isCollapsed ? <img src="/menu.png" alt="" /> : <img src="/left.png" alt="" />}
             </button>
         </>
     )

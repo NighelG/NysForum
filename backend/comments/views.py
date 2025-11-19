@@ -1,13 +1,22 @@
 from django.shortcuts import render
 from rest_framework import generics, permissions, status
 from rest_framework.response import Response
+from django.db.models import Prefetch
 from .models import Comment
 from .serializers import CommentSerializer
 
 class CommentListCreateView(generics.ListCreateAPIView):
-    queryset = Comment.objects.select_related('profile__user', 'post').prefetch_related('media_files')
     serializer_class = CommentSerializer
     permission_classes = [permissions.IsAuthenticatedOrReadOnly] 
+    def get_queryset(self):
+        queryset = Comment.objects.select_related(
+            'profile__user', 'post'
+        ).prefetch_related(
+            'media_files',
+            Prefetch('replies', queryset=Comment.objects.select_related('profile__user').prefetch_related('media_files'))
+        ).filter(parent__isnull=True)
+        
+        return queryset
     def get_serializer_context(self):
         context = super().get_serializer_context()
         context['request'] = self.request
@@ -20,7 +29,7 @@ class CommentDetailView(generics.RetrieveUpdateDestroyAPIView):
         'media_files', 'replies'
     )
     serializer_class = CommentSerializer
-    permission_classes = [permissions.IsAuthenticatedOrReadOnly]  
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
     def perform_update(self, serializer):
         comment = self.get_object()
         if (comment.profile != self.request.user.profile and 

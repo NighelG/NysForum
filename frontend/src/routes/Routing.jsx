@@ -3,6 +3,7 @@ import { useAuth } from '../context/AuthContext.jsx'
 import LoginPage from '../pages/LoginPage.jsx'
 import Forum from '../pages/Forum.jsx'
 import UserSettingsPage from '../pages/UserSettingsPage.jsx'
+import PostPage from '../pages/PostPage.jsx'
 
 const ProtectedRoute = ({ children }) => {
   const { isAuthenticated, loading, user } = useAuth()
@@ -57,14 +58,14 @@ function Routing() {
           </ProtectedRoute>
         } 
       />
-{/*       <Route 
+      <Route 
         path="/posts/:id" 
         element={
           <GuestRoute>
-            <PostDetailPage />
+            <PostPage />
           </GuestRoute>
         } 
-      /> */}
+      />
       <Route path="/" element={<Navigate to="/forum" replace />} />
       <Route path="*" element={<div>Página no encontrada - 404</div>} />
     </Routes>

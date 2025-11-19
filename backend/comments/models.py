@@ -1,3 +1,4 @@
+# comments/models.py
 from django.db import models
 from django.core.validators import MinLengthValidator
 from users.models import Profile
@@ -13,21 +14,28 @@ class Comment(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
     @property
     def likes_count(self):
-        return self.reactioncomment_set.filter(type='like').count()
+        from moderation.models import ReactionComment
+        return ReactionComment.objects.filter(comment=self, type='like').count()
+    
     @property
     def dislikes_count(self):
-        return self.reactioncomment_set.filter(type='dislike').count()
+        from moderation.models import ReactionComment
+        return ReactionComment.objects.filter(comment=self, type='dislike').count()
     @property
     def reports_count(self):
-        return self.reports.count()
+        from moderation.models import ReportComment
+        return ReportComment.objects.filter(comment=self).count()
     def __str__(self):
         return f"Comentario de {self.profile.user.username}"
-
 class CommentMedia(models.Model):
-    MEDIA_TYPES = [('image', 'Imagen'), ('video', 'Video'), ('audio', 'Audio')]
+    MEDIA_TYPES = [
+        ('image', 'Imagen'),
+        ('video', 'Video'), 
+        ('audio', 'Audio')
+    ]
     comment = models.ForeignKey(Comment, on_delete=models.CASCADE, related_name='media_files')
     file = CloudinaryField('media')
     media_type = models.CharField(max_length=10, choices=MEDIA_TYPES)
-    uploaded_at = models.DateTimeField(auto_now_add=True)   
+    uploaded_at = models.DateTimeField(auto_now_add=True)
     def __str__(self):
         return f"{self.media_type} en comentario {self.comment.id}"

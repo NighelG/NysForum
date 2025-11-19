@@ -201,7 +201,6 @@ function UserSettingsPage() {
                                 </div>
                             </div>
                         </div>
-
                         <div className="settings-section">
                             <h2>Personalización</h2>
                             {messages.error && (

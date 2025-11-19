@@ -75,9 +75,7 @@ function LoginPage() {
                         <input type="password" className="form-control form-control-custom" placeholder="Contraseña" value={password} onChange={(e) => setPassword(e.target.value)}/>
                     </div>
                     <div className="d-grid gap-2 mb-3">
-                        <button className="btn btn-primary-custom" onClick={handleLogin}>
-                            Iniciar Sesión
-                        </button>
+                        <button className="btn btn-primary-custom" onClick={handleLogin}> Iniciar Sesión </button>
                         <button className="btn btn-primary-custom" onClick={() => {
                             loginAsGuest() 
                             navigate('/forum')}}>
@@ -85,12 +83,8 @@ function LoginPage() {
                         </button>
                     </div>
                     <div className="text-center">
-                        <p className="mb-2" style={{ color: 'var(--dark-green)' }}>
-                            ¿No tienes una cuenta?
-                        </p>
-                        <button className="btn btn-link p-0 fw-bold"style={{ color: 'var(--asparagus)', textDecoration: 'none' }}onClick={() => setShowRegister(true)}>
-                            Regístrate aquí
-                        </button>
+                        <p className="mb-2" style={{ color: 'var(--dark-green)' }}>¿No tienes una cuenta?</p>
+                        <button className="btn btn-link p-0 fw-bold"style={{ color: 'var(--asparagus)', textDecoration: 'none' }}onClick={() => setShowRegister(true)}>Regístrate aquí</button>
                     </div>
                 </div>
             </div>

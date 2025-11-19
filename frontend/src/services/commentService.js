@@ -5,6 +5,11 @@ export const commentService = {
         return await apiRequest('/comments/');
     },
 
+    getCommentsByPostId: async (postId) => {
+        const allComments = await apiRequest('/comments/');
+        return allComments.filter(comment => comment.post === parseInt(postId));
+    },
+
     createComment: async (commentData) => {
         return await apiRequest('/comments/', {
             method: 'POST',
