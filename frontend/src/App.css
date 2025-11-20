@@ -1,10 +1,8 @@
-/* Estilos específicos de la aplicación que complementan Bootstrap */
 
 .App {
   text-align: center;
 }
 
-/* Mejoras de accesibilidad */
 .form-control-custom:focus {
   outline: none;
 }

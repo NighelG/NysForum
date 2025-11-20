@@ -58,6 +58,7 @@ return (
             Responder
         </button>
     </div>
+
     {isReplying && (
         <div className="reply-form">
             <textarea value={replyContent} onChange={(e) => onReplyContentChange(e.target.value, comment.id)}
@@ -72,27 +73,25 @@ return (
         <div className="replies-container">
         {displayedReplies.map(reply => (
             <ReplyComment 
-            key={reply.id} 
-            reply={reply} 
-            parentId={comment.id}
-            onLike={onLike} 
-            onDislike={onDislike} 
-            currentUser={currentUser}
-            replyingTo={replyingTo}
-            replyContents={replyContents}
-            onStartReply={onStartReply}
-            onCancelReply={onCancelReply}
-            onReplyContentChange={onReplyContentChange}
-            onReply={onReply}
+                key={reply.id} 
+                reply={reply} 
+                parentId={comment.id}
+                onLike={onLike} 
+                onDislike={onDislike} 
+                currentUser={currentUser}
+                replyingTo={replyingTo}
+                replyContents={replyContents}
+                onStartReply={onStartReply}
+                onCancelReply={onCancelReply}
+                onReplyContentChange={onReplyContentChange}
+                onReply={onReply}
             />
         ))}
         {showExpandButton && !expandedReplies[comment.id] && (
             <button className="show-more-replies-btn" onClick={() => onToggleReplies(comment.id)}>Ver {hiddenRepliesCount}respuestas más</button>
         )}
         {expandedReplies[comment.id] && (
-            <button className="reply-at-end-btn"onClick={() => onStartReply(comment.id)}disabled={!currentUser || currentUser.isGuest}>
-                Responder
-            </button>
+            <button className="reply-at-end-btn"onClick={() => onStartReply(comment.id)}disabled={!currentUser || currentUser.isGuest}>Responder</button>
         )}
         </div>
     )}

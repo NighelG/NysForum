@@ -34,7 +34,6 @@ function RegisterComponent({ onClose }) {
     }
     const validarUsuario = () => formData.username.length >= 3
     const validarPassword = () => formData.password.length >= 8
-
     const handleRegistro = async () => {
         setErrorMsg('')
         if (!formData.username || !formData.email || !formData.password || !formData.password_confirm) {

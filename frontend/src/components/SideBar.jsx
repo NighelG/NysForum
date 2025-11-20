@@ -6,7 +6,6 @@ function SideBar() {
     const navigate = useNavigate()
     const location = useLocation()
     const [isCollapsed, setIsCollapsed] = useState(true)
-
     const menuItems = [
         { id: 'forum', label: 'Foro', path: '/forum', icon: '/home.png'},
         { id: 'settings', label: 'Configuración', path: '/settings', icon: '/settings.png'}

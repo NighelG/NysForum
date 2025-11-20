@@ -1,16 +1,15 @@
-
 .sidebar {
     position: fixed;
     left: 0;
     top: 0;
     height: 100vh;
     width: 200px;
-    background: linear-gradient(180deg, var(--mimi-pink) 0%, var(--mauve) 100%);
-    border-right: 1px solid var(--periwinkle);
+    background-color: var(--twilight-indigo);
+    border-right: 1px solid var(--wisteria-blue);
     display: flex;
     flex-direction: column;
     z-index: 1000;
-    box-shadow: 2px 0 10px rgba(68, 52, 80, 0.1);
+    box-shadow: 2px 0 10px rgba(3, 1, 17, 0.15);
     transition: width 0.3s ease;
     overflow: hidden;
 }
@@ -21,7 +20,7 @@
 
 .sidebar-header {
     padding: 20px 15px;
-    border-bottom: 1px solid rgba(184, 192, 255, 0.3);
+    border-bottom: 1px solid var(--wisteria-blue);
     display: flex;
     align-items: center;
     gap: 10px;
@@ -34,7 +33,7 @@
 }
 
 .app-name {
-    color: var(--text-dark);
+    color: white;
     font-weight: bold;
     font-size: 16px;
     white-space: nowrap;
@@ -62,7 +61,7 @@
     padding: 12px 15px;
     background: none;
     border: none;
-    color: var(--text-dark);
+    color: white;
     font-size: 14px;
     font-weight: 500;
     cursor: pointer;
@@ -75,13 +74,13 @@
 }
 
 .nav-item:hover:not(.disabled) {
-    background: rgba(255, 255, 255, 0.3);
+    background: rgba(163, 172, 220, 0.2);
     transform: translateX(3px);
 }
 
 .nav-item.active {
-    background: rgba(255, 255, 255, 0.5);
-    border-left: 3px solid var(--mauve-2);
+    background: rgba(80, 95, 193, 0.3);
+    border-left: 3px solid var(--slate-indigo);
 }
 
 .nav-item.disabled {
@@ -94,6 +93,7 @@
     width: 20px;
     text-align: center;
     flex-shrink: 0;
+    color: var(--wisteria-blue);
 }
 
 .nav-label {
@@ -110,7 +110,7 @@
 
 .sidebar-footer {
     padding: 15px;
-    border-top: 1px solid rgba(184, 192, 255, 0.3);
+    border-top: 1px solid var(--wisteria-blue);
     text-align: center;
     opacity: 1;
     transition: opacity 0.2s ease;
@@ -124,7 +124,7 @@
 }
 
 .sidebar-version {
-    color: var(--text-light);
+    color: var(--wisteria-blue);
     font-size: 11px;
     margin: 0;
     opacity: 0.7;
@@ -137,8 +137,8 @@
     transform: translateY(-50%);
     width: 50px;
     height: 50px;
-    background: linear-gradient(180deg, var(--mimi-pink) 0%, var(--mauve) 100%);
-    border: 1px solid var(--periwinkle);
+    background-color: var(--twilight-indigo);
+    border: 1px solid var(--wisteria-blue);
     border-left: none;
     border-radius: 0 8px 8px 0;
     cursor: pointer;
@@ -147,13 +147,13 @@
     align-items: center;
     justify-content: center;
     font-size: 12px;
-    color: var(--text-dark);
+    color: white;
     transition: all 0.3s ease;
-    box-shadow: 2px 0 5px rgba(92, 72, 106, 0.2);
+    box-shadow: 2px 0 5px rgba(3, 1, 17, 0.2);
 }
 
 .sidebar-toggle:hover {
-    background: rgba(255, 255, 255, 0.3);
+    background-color: var(--slate-indigo);
     width: 45px;
 }
 
@@ -167,6 +167,7 @@
     min-height: 100vh;
     box-sizing: border-box;
     transition: margin-left 0.3s ease;
+    background-color: var(--twilight-indigo);
 }
 
 .sidebar.collapsed ~ .main-content {
@@ -192,7 +193,7 @@
     .sidebar:not(.collapsed) {
         width: 200px;
         z-index: 1002;
-        box-shadow: 2px 0 15px rgba(92, 72, 106, 0.3);
+        box-shadow: 2px 0 15px rgba(3, 1, 17, 0.3);
     }
     
     .sidebar-toggle {
@@ -265,23 +266,23 @@
     height: 20px;
     flex-shrink: 0;
     object-fit: contain;
-    filter: brightness(0) saturate(100%) invert(18%) sepia(12%) saturate(1234%) hue-rotate(218deg) brightness(93%) contrast(85%);
+    filter: brightness(0) saturate(100%) invert(100%) sepia(0%) saturate(0%) hue-rotate(0deg) brightness(100%) contrast(100%);
     transition: filter 0.3s ease;
 }
 
 .nav-item:hover .nav-icon-img {
-    filter: brightness(0) saturate(100%) invert(18%) sepia(12%) saturate(1234%) hue-rotate(218deg) brightness(73%) contrast(85%);
+    filter: brightness(0) saturate(100%) invert(85%) sepia(15%) saturate(500%) hue-rotate(200deg) brightness(110%) contrast(90%);
 }
 
 .nav-item.active .nav-icon-img {
-    filter: brightness(0) saturate(100%) invert(18%) sepia(12%) saturate(1234%) hue-rotate(218deg) brightness(53%) contrast(85%);
+    filter: brightness(0) saturate(100%) invert(70%) sepia(30%) saturate(600%) hue-rotate(200deg) brightness(120%) contrast(90%);
 }
 
 .nav-icon-img.hover-effect {
-    filter: brightness(0) saturate(100%) invert(18%) sepia(12%) saturate(1234%) hue-rotate(218deg) brightness(93%) contrast(85%);
+    filter: brightness(0) saturate(100%) invert(100%) sepia(0%) saturate(0%) hue-rotate(0deg) brightness(100%) contrast(100%);
     transition: filter 0.3s ease;
 }
 
 .nav-icon-img.hover-effect:hover {
-    filter: brightness(0) saturate(100%) invert(18%) sepia(12%) saturate(1234%) hue-rotate(218deg) brightness(73%) contrast(85%);
+    filter: brightness(0) saturate(100%) invert(85%) sepia(15%) saturate(500%) hue-rotate(200deg) brightness(110%) contrast(90%);
 }

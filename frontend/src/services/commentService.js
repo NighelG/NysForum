@@ -6,8 +6,7 @@ export const commentService = {
     },
 
     getCommentsByPostId: async (postId) => {
-        const allComments = await apiRequest('/comments/');
-        return allComments.filter(comment => comment.post === parseInt(postId));
+        return await apiRequest(`/comments/?post=${postId}`);
     },
 
     createComment: async (commentData) => {

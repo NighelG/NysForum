@@ -1,11 +1,10 @@
-
 .overlay {
   position: fixed;
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(90, 74, 106, 0.5);
+  background: rgba(3, 1, 17, 0.6);
   backdrop-filter: blur(5px);
   z-index: 1000;
 }
@@ -16,12 +15,12 @@
   right: -400px;
   width: 400px;
   height: 100vh;
-  background: rgba(255, 255, 255, 0.95);
+  background: var(--lavender);
   backdrop-filter: blur(20px);
-  box-shadow: -5px 0 30px rgba(92, 72, 106, 0.2);
+  box-shadow: -5px 0 30px rgba(3, 1, 17, 0.2);
   transition: right 0.3s ease-in-out;
   z-index: 1001;
-  border-left: 1px solid rgba(184, 192, 255, 0.3);
+  border-left: 1px solid var(--wisteria-blue);
 }
 
 .drawer-container.open {
@@ -39,12 +38,12 @@
   justify-content: space-between;
   align-items: center;
   padding: 25px;
-  border-bottom: 1px solid rgba(184, 192, 255, 0.3);
-  background: linear-gradient(135deg, var(--mimi-pink), var(--periwinkle-2));
+  border-bottom: 1px solid var(--wisteria-blue);
+  background-color: var(--slate-indigo);
 }
 
 .drawer-header h2 {
-  color: var(--text-dark);
+  color: white;
   margin: 0;
   font-size: 1.5rem;
 }
@@ -56,15 +55,17 @@
   padding: 8px;
   border-radius: 50%;
   transition: background 0.3s ease;
+  color: white;
 }
 
 .close-btn:hover {
-  background: rgba(255, 255, 255, 0.5);
+  background: rgba(255, 255, 255, 0.2);
 }
 
 .tinyIcon {
   width: 20px;
   height: 20px;
+  filter: brightness(0) invert(1);
 }
 
 .drawer-content {
@@ -88,13 +89,14 @@
 
 .input, .textarea {
   padding: 15px;
-  border: 2px solid var(--periwinkle);
+  border: 2px solid var(--wisteria-blue);
   border-radius: 12px;
-  background: rgba(255, 255, 255, 0.8);
+  background: white;
   font-size: 14px;
   outline: none;
   transition: all 0.3s ease;
   font-family: inherit;
+  color: var(--ink-black);
 }
 
 .textarea {
@@ -103,9 +105,9 @@
 }
 
 .input:focus, .textarea:focus {
-  border-color: var(--mauve-2);
-  box-shadow: 0 0 0 3px rgba(200, 182, 255, 0.3);
-  background: rgba(255, 255, 255, 0.95);
+  border-color: var(--slate-indigo);
+  box-shadow: 0 0 0 3px rgba(80, 95, 193, 0.3);
+  background: white;
 }
 
 .media-section {
@@ -117,7 +119,7 @@
   align-items: center;
   gap: 8px;
   padding: 12px 20px;
-  background: linear-gradient(135deg, var(--mauve), var(--mauve-2));
+  background-color: var(--slate-indigo);
   color: white;
   border-radius: 25px;
   cursor: pointer;
@@ -127,8 +129,10 @@
 }
 
 .file-input-label:hover {
+  background-color: var(--wisteria-blue);
+  color: var(--ink-black);
   transform: translateY(-2px);
-  box-shadow: 0 4px 15px rgba(200, 182, 255, 0.4);
+  box-shadow: 0 4px 15px rgba(80, 95, 193, 0.4);
 }
 
 .file-input {
@@ -147,13 +151,14 @@
   justify-content: space-between;
   align-items: center;
   padding: 10px 15px;
-  background: rgba(184, 192, 255, 0.1);
+  background: rgba(163, 172, 220, 0.1);
   border-radius: 8px;
-  border: 1px solid var(--periwinkle);
+  border: 1px solid var(--wisteria-blue);
+  color: var(--ink-black);
 }
 
 .media-item span {
-  color: var(--text-dark);
+  color: var(--ink-black);
   font-size: 14px;
 }
 
@@ -177,7 +182,7 @@
 }
 
 .submit-btn {
-  background: linear-gradient(135deg, var(--mauve-2), var(--periwinkle));
+  background-color: var(--slate-indigo);
   color: white;
   border: none;
   padding: 15px 25px;
@@ -190,8 +195,10 @@
 }
 
 .submit-btn:hover:not(:disabled) {
+  background-color: var(--wisteria-blue);
+  color: var(--ink-black);
   transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(184, 192, 255, 0.6);
+  box-shadow: 0 6px 20px rgba(163, 172, 220, 0.6);
 }
 
 .submit-btn:disabled {
