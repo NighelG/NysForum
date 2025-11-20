@@ -8,6 +8,7 @@ function LoginPage() {
     const [password, setPassword] = useState('')
     const [errorMsg, setErrorMsg] = useState('')
     const [showRegister, setShowRegister] = useState(false)
+    const [showPassword, setShowPassword] = useState(false)
     const navigate = useNavigate()
     const { login, loginAsGuest } = useAuth()
 
@@ -22,6 +23,7 @@ function LoginPage() {
         )
         navigate('/forum')
     }
+
     const handleLogin = async () => {
         if (!user || !password) {
             setErrorMsg("Por favor llena todos los espacios")
@@ -72,7 +74,14 @@ function LoginPage() {
                     )}
                     <div className="mb-3">
                         <input type="text" className="form-control form-control-custom mb-3" placeholder="Usuario"value={user} onChange={(e) => setUser(e.target.value)} />
-                        <input type="password" className="form-control form-control-custom" placeholder="Contraseña" value={password} onChange={(e) => setPassword(e.target.value)}/>
+                        <div className="position-relative">
+                            <input type={showPassword ? "text" : "password"} className="form-control form-control-custom" 
+                            placeholder="Contraseña" value={password} onChange={(e) => setPassword(e.target.value)}/>
+                            <button type="button" className="btn btn-sm position-absolute end-0 top-50 translate-middle-y me-2"
+                                style={{ background: 'none', border: 'none' }}onClick={() => setShowPassword(!showPassword)}>
+                                {showPassword ? <img src="/pwoff.png" alt="" /> : <img src="/pwon.png" alt="" />}
+                            </button>
+                        </div>
                     </div>
                     <div className="d-grid gap-2 mb-3">
                         <button className="btn btn-primary-custom" onClick={handleLogin}> Iniciar Sesión </button>

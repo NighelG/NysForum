@@ -263,6 +263,7 @@ function UserSettingsPage() {
                                     publicaciones, comentarios y cualquier información asociada a tu cuenta.</p>
                                 <button className="btn-danger"onClick={deleteAccount}disabled={loading}>
                                     {loading ? "Eliminando..." : "Eliminar Mi Cuenta"}
+                                    <img src="/danger2.png" alt="" />
                                 </button>
                             </div>
                         </div>

@@ -13,6 +13,8 @@ function RegisterComponent({ onClose }) {
     })
     const [errorMsg, setErrorMsg] = useState('')
     const [isLoading, setIsLoading] = useState(false)
+    const [showPassword, setShowPassword] = useState(false)
+    const [showPasswordConfirm, setShowPasswordConfirm] = useState(false)
     useEffect(() => {
         document.body.classList.add('modal-open')
         
@@ -92,14 +94,8 @@ function RegisterComponent({ onClose }) {
             <div className="modal-backdrop" onClick={onClose}></div>
             <div className="modal-container"onClick={(e) => e.stopPropagation()}>
                 <div className="d-flex justify-content-between align-items-center mb-4">
-                    <h3 className="mb-0" style={{ color: 'var(--text-dark)' }}> 
-                        Crear Cuenta
-                    </h3>
-                    <button 
-                        onClick={onClose}
-                        className="btn-close"
-                        style={{ fontSize: '1.2rem' }}
-                    ></button>
+                    <h3 className="mb-0" style={{ color: 'var(--text-dark)' }}> Crear Cuenta</h3>
+                    <button onClick={onClose}className="btn-close"style={{ fontSize: '1.2rem' }}></button>
                 </div>
                 {errorMsg && (
                     <div className={`alert ${errorMsg.includes('success:') ? 'alert-success-custom' : 'alert-danger-custom'} mb-3`}role="alert">
@@ -126,12 +122,24 @@ function RegisterComponent({ onClose }) {
                 </div>
                 <div className="row">
                     <div className="col-md-6 mb-3">
-                        <input type="password" className="form-control form-control-custom"placeholder="Contraseña *"minLength="8" maxLength="15"
-                            value={formData.password} onChange={(e) => handleInputChange('password', e.target.value)} disabled={isLoading} required/>
+                        <div className="position-relative">
+                            <input type={showPassword ? "text" : "password"} className="form-control form-control-custom"placeholder="Contraseña *"minLength="8"
+                                maxLength="15"value={formData.password} onChange={(e) => handleInputChange('password', e.target.value)} disabled={isLoading} required/>
+                            <button type="button"className="btn btn-sm position-absolute end-0 top-50 translate-middle-y me-2"
+                                style={{ background: 'none', border: 'none' }}onClick={() => setShowPassword(!showPassword)}>
+                                {showPassword ? <img src="/pwoff.png" alt="" /> : <img src="/pwon.png" alt="" />}
+                            </button>
+                        </div>
                     </div>
                     <div className="col-md-6 mb-3">
-                        <input type="password"  className="form-control form-control-custom" placeholder="Confirmar Contraseña *" value={formData.password_confirm} 
-                            onChange={(e) => handleInputChange('password_confirm', e.target.value)} disabled={isLoading}required/>
+                        <div className="position-relative">
+                            <input type={showPasswordConfirm ? "text" : "password"}  className="form-control form-control-custom" placeholder="Confirmar Contraseña *" 
+                                value={formData.password_confirm} onChange={(e) => handleInputChange('password_confirm', e.target.value)} disabled={isLoading}required/>
+                            <button type="button"className="btn btn-sm position-absolute end-0 top-50 translate-middle-y me-2"
+                                style={{ background: 'none', border: 'none' }}onClick={() => setShowPasswordConfirm(!showPasswordConfirm)}>
+                                {showPassword ? <img src="/pwoff.png" alt="" /> : <img src="/pwon.png" alt="" />}
+                            </button>
+                        </div>
                     </div>
                 </div>
                 <button className="btn btn-primary-custom w-100 mb-3"onClick={handleRegistro}disabled={isLoading}>

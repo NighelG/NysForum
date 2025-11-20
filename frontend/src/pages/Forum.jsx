@@ -24,19 +24,19 @@ const Forum = () => {
         try {
             const postsData = await execute(postService.getPosts)
             
-            const adaptedPosts = postsData.map(post => ({
-                id: post.id,
-                title: post.title,
-                userName: post.profile?.user?.username || 'Usuario',
-                dateTime: post.created_at,
-                profileIcon: post.profile?.avatar || "/defaultPFP.jpg",
-                content: post.content,
-                categories: post.categories,
-                likes_count: post.likes_count,
-                dislikes_count: post.dislikes_count,
-                comments_count: post.comments_count,
-                views_count: post.views_count
-            }))
+        const adaptedPosts = postsData.map(post => ({
+            id: post.id,
+            title: post.title,
+            userName: post.username || post.profile?.user?.username || post.profile?.username || 'Usuario',
+            dateTime: post.created_at,
+            profileIcon: post.profile?.avatar || "/defaultPFP.jpg",
+            content: post.content,
+            categories: post.categories,
+            likes_count: post.likes_count,
+            dislikes_count: post.dislikes_count,
+            comments_count: post.comments_count,
+            views_count: post.views_count
+        }))
             
             setPosts(adaptedPosts)
         } catch (err) {

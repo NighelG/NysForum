@@ -5,6 +5,7 @@ import { useAuth } from '../context/AuthContext'
 import { postService } from '../services/postService'
 import { commentService } from '../services/commentService'
 import Sidebar from '../components/SideBar'
+import CommentSection from '../components/CommentSection'
 import '../styles/PostPage.css'
 
 const PostPage = () => {
@@ -17,14 +18,15 @@ const PostPage = () => {
     const [searchTerm, setSearchTerm] = useState('')
     const [isFormOpen, setIsFormOpen] = useState(false)
     const [commentContent, setCommentContent] = useState('')
-
+    const [replyingTo, setReplyingTo] = useState(null)
+    const [replyContents, setReplyContents] = useState({})
+    const [expandedReplies, setExpandedReplies] = useState({})
     useEffect(() => {
         if (id) {
             loadPost()
             loadComments()
         }
     }, [id])
-
     const loadPost = async () => {
         try {
             const postData = await execute(() => postService.getPost(id))
@@ -40,8 +42,7 @@ const PostPage = () => {
             if (allComments && Array.isArray(allComments)) {
                 const postComments = allComments.filter(comment => 
                     comment.post === parseInt(id)
-                )
-                
+                )          
                 const adaptedComments = postComments.map(comment => ({
                     id: comment.id,
                     content: comment.content || '',
@@ -49,14 +50,14 @@ const PostPage = () => {
                     profile: {
                         avatar: comment.profile?.avatar || "/defaultPFP.jpg",
                         user: { 
-                            username: comment.profile?.user?.username || 'Usuario' 
+                            username: comment.username || comment.profile?.user?.username || 'Usuario'
                         }
                     },
                     likes_count: comment.likes_count || 0,
                     dislikes_count: comment.dislikes_count || 0,
+                    user_reaction: comment.user_reaction,
                     replies: comment.replies || []
                 }))
-                
                 setComments(adaptedComments)
             }
         } catch (err) {
@@ -67,6 +68,24 @@ const PostPage = () => {
     const filteredComments = comments.filter(comment =>
         comment.profile.user.username.toLowerCase().includes(searchTerm.toLowerCase())
     )
+    const handleLikePost = async () => {
+        if (!user || user.isGuest) return
+        try {
+            await execute(() => postService.reactToPost(post.id, 'like'))
+            loadPost()
+        } catch (err) {
+            console.error('Error dando like al post:', err)
+        }
+    }
+    const handleDislikePost = async () => {
+        if (!user || user.isGuest) return
+        try {
+            await execute(() => postService.reactToPost(post.id, 'dislike'))
+            loadPost()
+        } catch (err) {
+            console.error('Error dando dislike al post:', err)
+        }
+    }
     const handleLike = async (commentId) => {
         if (!user || user.isGuest) return
         try {
@@ -76,6 +95,90 @@ const PostPage = () => {
             console.error('Error dando like:', err)
         }
     }
+    const handleDislike = async (commentId) => {
+        if (!user || user.isGuest) return
+        try {
+            await execute(() => commentService.reactToComment(commentId, 'dislike'))
+            loadComments()
+        } catch (err) {
+            console.error('Error dando dislike:', err)
+        }
+    }
+    const handleReply = async (commentId, parentId = null) => {
+        if (!user || user.isGuest) return
+        
+        const replyContent = parentId ? replyContents[parentId]?.[commentId] : replyContents[commentId]
+        
+        if (!replyContent?.trim()) return
+
+        try {
+            await execute(() => commentService.createComment({
+                content: replyContent.trim(),
+                post: parseInt(id),
+                parent: parentId || commentId
+            }))
+            if (parentId) {
+                setReplyContents(prev => ({
+                    ...prev,
+                    [parentId]: {
+                        ...prev[parentId],
+                        [commentId]: ''
+                    }
+                }))
+            } else {
+                setReplyContents(prev => ({
+                    ...prev,
+                    [commentId]: ''
+                }))
+            }
+            setReplyingTo(null)
+            loadComments()
+        } catch (err) {
+            console.error('Error publicando respuesta:', err)
+        }
+    }
+    const handleStartReply = (commentId, parentId = null) => {
+        setReplyingTo(parentId ? `${parentId}-${commentId}` : commentId)
+        if (parentId) {
+            setReplyContents(prev => ({
+                ...prev,
+                [parentId]: {
+                    ...prev[parentId],
+                    [commentId]: prev[parentId]?.[commentId] || ''
+                }
+            }))
+        } else {
+            setReplyContents(prev => ({
+                ...prev,
+                [commentId]: prev[commentId] || ''
+            }))
+        }
+    }
+    const handleCancelReply = () => {
+        setReplyingTo(null)
+    }
+    const handleReplyContentChange = (content, commentId, parentId = null) => {
+        if (parentId) {
+            setReplyContents(prev => ({
+                ...prev,
+                [parentId]: {
+                    ...prev[parentId],
+                    [commentId]: content
+                }
+            }))
+        } else {
+            setReplyContents(prev => ({
+                ...prev,
+                [commentId]: content
+            }))
+        }
+    }
+    const toggleReplies = (commentId) => {
+        setExpandedReplies(prev => ({
+            ...prev,
+            [commentId]: !prev[commentId]
+        }))
+    }
     const handleSubmitComment = async (e) => {
         e.preventDefault()
         if (!commentContent.trim() || !user || user.isGuest) return
@@ -84,56 +187,12 @@ const PostPage = () => {
                 content: commentContent.trim(),
                 post: parseInt(id)
             }))
-            
             setCommentContent('')
             setIsFormOpen(false)
             loadComments()
         } catch (err) {
             console.error('Error publicando comentario:', err)
         }
-    }
-    const CommentItem = ({ comment, onLike, currentUser }) => {
-        return (
-            <div className="comment-item" key={comment.id}>
-                <div className="comment-header">
-                    <img src={comment.profile.avatar} alt="Avatar" className="comment-avatar" />
-                    <div className="comment-user-info">
-                        <span className="comment-username">{comment.profile.user.username}</span>
-                        <span className="comment-date">{new Date(comment.created_at).toLocaleString()}</span>
-                    </div>
-                </div>
-                <div className="comment-content">
-                    <p>{comment.content}</p>
-                </div>
-                <div className="comment-actions">
-                    <button 
-                        className="like-btn"
-                        onClick={() => onLike(comment.id)}
-                        disabled={!currentUser || currentUser.isGuest}
-                    >
-                        {comment.likes_count}
-                    </button>
-                </div>
-                {comment.replies && comment.replies.length > 0 && (
-                    <div className="replies-container">
-                        {comment.replies.map(reply => (
-                            <div key={reply.id} className="reply-item">
-                                <div className="comment-header">
-                                    <img src={reply.profile.avatar} alt="Avatar" className="comment-avatar" />
-                                    <div className="comment-user-info">
-                                        <span className="comment-username">{reply.profile.user.username}</span>
-                                        <span className="comment-date">{new Date(reply.created_at).toLocaleString()}</span>
-                                    </div>
-                                </div>
-                                <div className="comment-content">
-                                    <p>{reply.content}</p>
-                                </div>
-                            </div>
-                        ))}
-                    </div>
-                )}
-            </div>
-        )
     }
     if (loading && !post) {
         return (
@@ -169,13 +228,13 @@ const PostPage = () => {
                         <div className="post-header">
                             <img src={post.profile?.avatar || "/defaultPFP.jpg"} alt="Avatar" className="post-avatar" />
                             <div className="post-user-info">
-                                <span className="post-username">{post.profile?.user?.username || 'Usuario'}</span>
+                                <span className="post-username">
+                                    {post.username || 'Usuario'}
+                                </span>
                                 <span className="post-date">{new Date(post.created_at).toLocaleString()}</span>
                             </div>
-                        </div>
-                        
+                        </div>                
                         <h1 className="post-title">{post.title}</h1>
-                        
                         <div className="post-content">
                             <p>{post.content}</p>
                         </div>
@@ -198,9 +257,15 @@ const PostPage = () => {
                             </div>
                         )}
                         <div className="post-stats">
-                            <span><img className='nav-icon-img' src="/like.png" alt="Likes" /> {post.likes_count || 0}</span>
-                            <span><img className='nav-icon-img' src="/dislike.png" alt="Dislikes" /> {post.dislikes_count || 0}</span>
-                            <span>Respuestas: {post.comments_count || 0}</span>
+                            <button className={`like-btn ${post.user_reaction === 'like' ? 'active' : ''}`}onClick={handleLikePost}disabled={!user || user.isGuest}>
+                                <img className='nav-icon-img' src="/like.png" alt="Likes" /> 
+                                {post.likes_count || 0}
+                            </button>
+                            <button className={`dislike-btn ${post.user_reaction === 'dislike' ? 'active' : ''}`}onClick={handleDislikePost} disabled={!user || user.isGuest}>
+                                <img className='nav-icon-img' src="/dislike.png" alt="Dislikes" /> 
+                                {post.dislikes_count || 0}
+                            </button>
+                            <span><img className='nav-icon-img' src="/comment.png" alt="Likes" /> Respuestas: {post.comments_count || 0}</span>
                             <span><img className='nav-icon-img' src="/views.png" alt="Vistas" /> Vistas: {post.views_count || 0}</span>
                         </div>
                     </div>
@@ -217,10 +282,11 @@ const PostPage = () => {
                         {isFormOpen && (
                             <form className="comment-form" onSubmit={handleSubmitComment}>
                                 <textarea value={commentContent} onChange={(e) => setCommentContent(e.target.value)}placeholder="Escribe tu comentario..." className="comment-textarea" rows="4"/>
-                                <button type="submit" disabled={!commentContent.trim()} className="btn-submit">Publicar Comentario</button>
+                                <button type="submit" disabled={!commentContent.trim()} className="btn-submit">
+                                    Publicar Comentario
+                                </button>
                             </form>
                         )}
-
                         <div className="comments-list">
                             {filteredComments.length === 0 ? (
                                 <div className="no-comments">
@@ -231,7 +297,21 @@ const PostPage = () => {
                                 </div>
                             ) : (
                                 filteredComments.map(comment => (
-                                    <CommentItem key={comment.id} comment={comment} onLike={handleLike} currentUser={user} />
+                                    <CommentSection 
+                                        key={comment.id} 
+                                        comment={comment} 
+                                        onLike={handleLike} 
+                                        onDislike={handleDislike} 
+                                        currentUser={user}
+                                        replyingTo={replyingTo}
+                                        replyContents={replyContents}
+                                        expandedReplies={expandedReplies}
+                                        onStartReply={handleStartReply}
+                                        onCancelReply={handleCancelReply}
+                                        onReplyContentChange={handleReplyContentChange}
+                                        onReply={handleReply}
+                                        onToggleReplies={toggleReplies}
+                                    />
                                 ))
                             )}
                         </div>

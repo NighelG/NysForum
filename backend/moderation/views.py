@@ -1,4 +1,4 @@
-from django.shortcuts import render
+from django.db import IntegrityError, transaction
 from rest_framework import generics, permissions, status
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -31,19 +31,113 @@ class IsAdminOrTrueAdmin(permissions.BasePermission):
         return False
 
 class ReactionPostListCreateView(generics.ListCreateAPIView):
-    queryset = ReactionPost.objects.select_related('profile__user', 'post')
     serializer_class = ReactionPostSerializer
     permission_classes = [permissions.IsAuthenticated]
-    def perform_create(self, serializer):
-        serializer.save(profile=self.request.user.profile)
+    
+    def get_queryset(self):
+        return ReactionPost.objects.filter(profile=self.request.user.profile).select_related('profile__user', 'post')
+    
+    def create(self, request, *args, **kwargs):
+        try:
+            post_id = request.data.get('post')
+            reaction_type = request.data.get('type')
+            
+            if not post_id or not reaction_type:
+                return Response(
+                    {'error': 'Se requieren post y type'}, 
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+            with transaction.atomic():
+                existing_reaction = ReactionPost.objects.filter(
+                    post_id=post_id,
+                    profile=request.user.profile
+                ).first()
+                if existing_reaction:
+                    if existing_reaction.type == reaction_type:
+                        existing_reaction.delete()
+                        return Response({
+                            'status': 'removed',
+                            'message': 'Reacción eliminada'
+                        }, status=status.HTTP_200_OK)
+                    else:
+                        existing_reaction.type = reaction_type
+                        existing_reaction.save()
+                        serializer = self.get_serializer(existing_reaction)
+                        return Response({
+                            'status': 'updated',
+                            'data': serializer.data
+                        }, status=status.HTTP_200_OK)
+                else:
+                    serializer = self.get_serializer(data=request.data)
+                    serializer.is_valid(raise_exception=True)
+                    serializer.save(profile=request.user.profile)
+                    return Response({
+                        'status': 'created',
+                        'data': serializer.data
+                    }, status=status.HTTP_201_CREATED)
+        except IntegrityError as e:
+            return Response(
+                {'error': 'Error de integridad en la base de datos'}, 
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        except Exception as e:
+            return Response(
+                {'error': str(e)}, 
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
 
 class ReactionCommentListCreateView(generics.ListCreateAPIView):
-    queryset = ReactionComment.objects.select_related('profile__user', 'comment')
     serializer_class = ReactionCommentSerializer
     permission_classes = [permissions.IsAuthenticated]
-    
-    def perform_create(self, serializer):
-        serializer.save(profile=self.request.user.profile)
+    def get_queryset(self):
+        return ReactionComment.objects.filter(profile=self.request.user.profile).select_related('profile__user', 'comment')
+    def create(self, request, *args, **kwargs):
+        try:
+            comment_id = request.data.get('comment')
+            reaction_type = request.data.get('type')
+            if not comment_id or not reaction_type:
+                return Response(
+                    {'error': 'Se requieren comment y type'}, 
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+            with transaction.atomic():
+                existing_reaction = ReactionComment.objects.filter(
+                    comment_id=comment_id,
+                    profile=request.user.profile
+                ).first()
+                if existing_reaction:
+                    if existing_reaction.type == reaction_type:
+                        existing_reaction.delete()
+                        return Response({
+                            'status': 'removed',
+                            'message': 'Reacción eliminada'
+                        }, status=status.HTTP_200_OK)
+                    else:
+                        existing_reaction.type = reaction_type
+                        existing_reaction.save()
+                        serializer = self.get_serializer(existing_reaction)
+                        return Response({
+                            'status': 'updated',
+                            'data': serializer.data
+                        }, status=status.HTTP_200_OK)
+                else:
+                    serializer = self.get_serializer(data=request.data)
+                    serializer.is_valid(raise_exception=True)
+                    serializer.save(profile=request.user.profile)
+                    return Response({
+                        'status': 'created',
+                        'data': serializer.data
+                    }, status=status.HTTP_201_CREATED)
+        except IntegrityError as e:
+            return Response(
+                {'error': 'Error de integridad en la base de datos'}, 
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        except Exception as e:
+            return Response(
+                {'error': str(e)}, 
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
 
 class NotificationListView(generics.ListAPIView):
     serializer_class = NotificationSerializer
