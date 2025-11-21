@@ -4,8 +4,7 @@
     top: 0;
     height: 100vh;
     width: 200px;
-    background-color: var(--twilight-indigo);
-    border-right: 1px solid var(--wisteria-blue);
+    background-color: var(--wisteria-blue);
     display: flex;
     flex-direction: column;
     z-index: 1000;
@@ -19,6 +18,7 @@
 }
 
 .sidebar-header {
+    background-color: var(--slate-indigo);
     padding: 20px 15px;
     border-bottom: 1px solid var(--wisteria-blue);
     display: flex;
@@ -29,7 +29,7 @@
 
 .sidebar-logo {
     width: 150px;
-    height: 50px;
+    height: 60px;
 }
 
 .app-name {
@@ -47,6 +47,7 @@
 }
 
 .sidebar-nav {
+    background-color: var(--lavender);
     flex: 1;
     padding: 15px 0;
     display: flex;
@@ -61,7 +62,7 @@
     padding: 12px 15px;
     background: none;
     border: none;
-    color: white;
+    color: rgb(0, 0, 0);
     font-size: 14px;
     font-weight: 500;
     cursor: pointer;
@@ -109,6 +110,7 @@
 }
 
 .sidebar-footer {
+    background-color: var(--slate-indigo);
     padding: 15px;
     border-top: 1px solid var(--wisteria-blue);
     text-align: center;
@@ -137,7 +139,7 @@
     transform: translateY(-50%);
     width: 50px;
     height: 50px;
-    background-color: var(--twilight-indigo);
+    background-color: var(--wisteria-blue);
     border: 1px solid var(--wisteria-blue);
     border-left: none;
     border-radius: 0 8px 8px 0;

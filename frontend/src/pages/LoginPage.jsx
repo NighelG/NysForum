@@ -57,7 +57,7 @@ function LoginPage() {
             </div>
             <div className="card shadow-lg border-0 position-relative" 
                     style={{
-                        backgroundColor: 'var(--tea-green)',
+                        backgroundColor: 'var(--lavender)',
                         border: '3px solid var(--asparagus)',
                         borderRadius: '20px',
                         maxWidth: '400px',
@@ -65,7 +65,7 @@ function LoginPage() {
                     }}>
                 <div className="card-body p-4 text-center">
                     <div className="mb-4">
-                        <img src="/nysforum-high-resolution-logo-transparent.png" alt="NysForum Logo" className="logo-login"/>
+                        <img src="/nys-nice-forum-logo.png" alt="NysForum Logo" className="logo-login"/>
                     </div>
                     {errorMsg && (
                         <div className="alert alert-danger mb-3" role="alert">

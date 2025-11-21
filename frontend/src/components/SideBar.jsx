@@ -23,7 +23,7 @@ function SideBar() {
         <>
             <div className={`sidebar ${isCollapsed ? 'collapsed' : ''}`}>
                 <div className="sidebar-header">
-                    <img src="/nysforum-high-resolution-logo-transparent(1).png" alt="NysForum" className="sidebar-logo" />
+                    <img src="/nys-nice-forum.png" alt="NysForum" className="sidebar-logo" />
                 </div>
                 <nav className="sidebar-nav">
                     {menuItems.map((item) => (

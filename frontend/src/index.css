@@ -177,7 +177,7 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .logo-login {
-  width: 180px;
+  width: 360px;
   height: 180px;
 }
 
@@ -294,4 +294,8 @@ body {
 
 .sidebar-submenu:hover {
   background-color: var(--wisteria-blue);
+}
+
+.card-body p-4 text-center{
+  background-color: var(--lavender);
 }
