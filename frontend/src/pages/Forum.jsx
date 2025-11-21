@@ -76,7 +76,6 @@ const Forum = () => {
             {user && !user.isGuest && (
                 <div className="floating-create-button">
                     <button className='create-post-fab' onClick={() => setIsDrawerOpen(true)}>
-                        <img className='nav-icon-img' src="/chat.png" alt="Nueva discusión" />
                         <span className="fab-text">Crear Publicación</span>
                     </button>
                 </div>
@@ -100,10 +99,10 @@ const Forum = () => {
                             <div className='discussion-title-container'>
                                 <h3 className="discussion-title">{post.title}</h3>
                                 <div className="post-stats">
-                                    <span> <img className='nav-icon-img' src="/like.png" alt="" /> {post.likes_count}</span>
-                                    <span> <img className='nav-icon-img' src="/dislike.png" alt="" /> {post.dislikes_count}</span>
+                                    <span> <img className='icono-negro' src="/like.png" alt="" /> {post.likes_count}</span>
+                                    <span> <img className='icono-negro' src="/dislike.png" alt="" /> {post.dislikes_count}</span>
                                     <span> Respuestas: {post.comments_count}</span>
-                                    <span> <img className='nav-icon-img' src="/views.png" alt="" /> Vistas: {post.views_count}</span>
+                                    <span> <img className='icono-negro' src="/views.png" alt="" /> Vistas: {post.views_count}</span>
                                 </div>
                                 {post.categories && post.categories.length > 0 && (
                                     <div className="post-categories">

@@ -13,6 +13,7 @@ const PostPage = () => {
     const navigate = useNavigate()
     const { user } = useAuth()
     const { execute, loading, error } = useApi()
+
     const [post, setPost] = useState(null)
     const [comments, setComments] = useState([])
     const [searchTerm, setSearchTerm] = useState('')
@@ -37,26 +38,28 @@ const PostPage = () => {
     }
     const loadComments = async () => {
         try {
-            const allComments = await execute(commentService.getComments)
-            
+            const allComments = await execute(commentService.getComments) 
             if (allComments && Array.isArray(allComments)) {
-                const postComments = allComments.filter(comment => 
-                    comment.post === parseInt(id)
-                )          
+                const postComments = allComments.filter(
+                    comment => comment.post === parseInt(id)
+                )
                 const adaptedComments = postComments.map(comment => ({
                     id: comment.id,
                     content: comment.content || '',
                     created_at: comment.created_at,
                     profile: {
+                        id: comment.profile?.id ?? null,
                         avatar: comment.profile?.avatar || "/defaultPFP.jpg",
-                        user: { 
-                            username: comment.username || comment.profile?.user?.username || 'Usuario'
-                        }
+                        username: comment.profile?.username || "Usuario",
+                        role: comment.profile?.role || "user",
                     },
+                    media_files: comment.media_files || [],
                     likes_count: comment.likes_count || 0,
                     dislikes_count: comment.dislikes_count || 0,
-                    user_reaction: comment.user_reaction,
-                    replies: comment.replies || []
+                    user_reaction: comment.user_reaction || null,
+                        replies: (comment.replies || []).sort((a, b) => 
+                        new Date(a.created_at) - new Date(b.created_at)
+                    )
                 }))
                 setComments(adaptedComments)
             }
@@ -66,7 +69,9 @@ const PostPage = () => {
         }
     }
     const filteredComments = comments.filter(comment =>
-        comment.profile.user.username.toLowerCase().includes(searchTerm.toLowerCase())
+        (comment.profile?.username || "Usuario")
+            .toLowerCase()
+            .includes(searchTerm.toLowerCase())
     )
     const handleLikePost = async () => {
         if (!user || user.isGuest) return
@@ -106,11 +111,10 @@ const PostPage = () => {
     }
     const handleReply = async (commentId, parentId = null) => {
         if (!user || user.isGuest) return
-        
-        const replyContent = parentId ? replyContents[parentId]?.[commentId] : replyContents[commentId]
-        
+        const replyContent = parentId 
+            ? replyContents[parentId]?.[commentId] 
+            : replyContents[commentId]
         if (!replyContent?.trim()) return
-
         try {
             await execute(() => commentService.createComment({
                 content: replyContent.trim(),
@@ -229,15 +233,13 @@ const PostPage = () => {
                             <img src={post.profile?.avatar || "/defaultPFP.jpg"} alt="Avatar" className="post-avatar" />
                             <div className="post-user-info">
                                 <span className="post-username">
-                                    {post.username || 'Usuario'}
+                                    {post.username || post.profile?.username || 'Usuario'}
                                 </span>
                                 <span className="post-date">{new Date(post.created_at).toLocaleString()}</span>
                             </div>
                         </div>                
                         <h1 className="post-title">{post.title}</h1>
-                        <div className="post-content">
-                            <p>{post.content}</p>
-                        </div>
+                        <div className="post-content"><p>{post.content}</p></div>
                         {post.media_files?.length > 0 && (
                             <div className="post-media-gallery">
                                 {post.media_files.map(media => (
@@ -258,21 +260,27 @@ const PostPage = () => {
                         )}
                         <div className="post-stats">
                             <button className={`like-btn ${post.user_reaction === 'like' ? 'active' : ''}`}onClick={handleLikePost}disabled={!user || user.isGuest}>
-                                <img className='nav-icon-img' src="/like.png" alt="Likes" /> 
+                                <img className='icono-negro' src="/like.png" alt="Likes" /> 
                                 {post.likes_count || 0}
                             </button>
                             <button className={`dislike-btn ${post.user_reaction === 'dislike' ? 'active' : ''}`}onClick={handleDislikePost} disabled={!user || user.isGuest}>
-                                <img className='nav-icon-img' src="/dislike.png" alt="Dislikes" /> 
+                                <img className='icono-negro' src="/dislike.png" alt="Dislikes" /> 
                                 {post.dislikes_count || 0}
                             </button>
-                            <span><img className='nav-icon-img' src="/comment.png" alt="Likes" /> Respuestas: {post.comments_count || 0}</span>
-                            <span><img className='nav-icon-img' src="/views.png" alt="Vistas" /> Vistas: {post.views_count || 0}</span>
+                            <span>
+                                <img className='icono-negro' src="/comment.png" alt="Comments" /> 
+                                Respuestas: {post.comments_count || 0}
+                            </span>
+                            <span>
+                                <img className='icono-negro' src="/views.png" alt="Vistas" /> 
+                                Vistas: {post.views_count || 0}
+                            </span>
                         </div>
                     </div>
                     <div className="comments-section">
                         <div className="comments-header">
                             <h3>Comentarios ({comments.length})</h3>
-                            <input type="text" placeholder="Buscar por usuario..." value={searchTerm}onChange={(e) => setSearchTerm(e.target.value)} className="search-input"/>
+                            <input type="text" placeholder="Buscar por usuario..."  value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="search-input"/>
                             {user && !user.isGuest && (
                                 <button className="btn-new-comment" onClick={() => setIsFormOpen(!isFormOpen)}>
                                     {isFormOpen ? 'Cancelar' : 'Nuevo Comentario'}
@@ -281,10 +289,8 @@ const PostPage = () => {
                         </div>
                         {isFormOpen && (
                             <form className="comment-form" onSubmit={handleSubmitComment}>
-                                <textarea value={commentContent} onChange={(e) => setCommentContent(e.target.value)}placeholder="Escribe tu comentario..." className="comment-textarea" rows="4"/>
-                                <button type="submit" disabled={!commentContent.trim()} className="btn-submit">
-                                    Publicar Comentario
-                                </button>
+                                <textarea value={commentContent} onChange={(e) => setCommentContent(e.target.value)} placeholder="Escribe tu comentario..." className="comment-textarea" rows="4"/>
+                                <button type="submit" disabled={!commentContent.trim()} className="btn-submit">Publicar Comentario</button>
                             </form>
                         )}
                         <div className="comments-list">

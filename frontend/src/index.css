@@ -299,3 +299,9 @@ body {
 .card-body p-4 text-center{
   background-color: var(--lavender);
 }
+
+.icono-negro {
+    filter: brightness(0) saturate(100%);
+    width: 20px;
+    height: 20px;
+}

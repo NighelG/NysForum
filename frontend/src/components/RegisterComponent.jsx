@@ -126,7 +126,7 @@ function RegisterComponent({ onClose }) {
                                 maxLength="15"value={formData.password} onChange={(e) => handleInputChange('password', e.target.value)} disabled={isLoading} required/>
                             <button type="button"className="btn btn-sm position-absolute end-0 top-50 translate-middle-y me-2"
                                 style={{ background: 'none', border: 'none' }}onClick={() => setShowPassword(!showPassword)}>
-                                {showPassword ? <img src="/pwoff.png" alt="" /> : <img src="/pwon.png" alt="" />}
+                                {showPassword ? <img className='icono-negro' src="/pwoff.png" alt="" /> : <img className='icono-negro' src="/pwon.png" alt="" />}
                             </button>
                         </div>
                     </div>
@@ -136,7 +136,7 @@ function RegisterComponent({ onClose }) {
                                 value={formData.password_confirm} onChange={(e) => handleInputChange('password_confirm', e.target.value)} disabled={isLoading}required/>
                             <button type="button"className="btn btn-sm position-absolute end-0 top-50 translate-middle-y me-2"
                                 style={{ background: 'none', border: 'none' }}onClick={() => setShowPasswordConfirm(!showPasswordConfirm)}>
-                                {showPassword ? <img src="/pwoff.png" alt="" /> : <img src="/pwon.png" alt="" />}
+                                {showPassword ? <img className='icono-negro' src="/pwoff.png" alt="" /> : <img className='icono-negro' src="/pwon.png" alt="" />}
                             </button>
                         </div>
                     </div>
