@@ -104,11 +104,15 @@ const Forum = () => {
                                     <span> Respuestas: {post.comments_count}</span>
                                     <span> <img className='icono-negro' src="/views.png" alt="" /> Vistas: {post.views_count}</span>
                                 </div>
-                                {post.categories && post.categories.length > 0 && (
+                                {post.categories && post.categories.length > 0 ? (
                                     <div className="post-categories">
                                         {post.categories.map(cat => (
                                             <span key={cat.id} className="category-tag">#{cat.name}</span>
                                         ))}
+                                    </div>
+                                ) : (
+                                    <div className="post-categories no-cat">
+                                        <span className="category-tag">Sin categoría</span>
                                     </div>
                                 )}
                             </div>

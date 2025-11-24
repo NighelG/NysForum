@@ -17,6 +17,11 @@ class PostMediaSerializer(serializers.ModelSerializer):
         fields = ['id', 'file', 'media_type', 'uploaded_at']
         read_only_fields = ['id', 'uploaded_at']
 
+class PostMediaCreateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = PostMedia
+        fields = ['file', 'media_type']
+
 class PostListSerializer(serializers.ModelSerializer):
     profile = ProfileMinimalSerializer(read_only=True)
     categories = CategorySerializer(many=True, read_only=True)
@@ -43,10 +48,9 @@ class PostListSerializer(serializers.ModelSerializer):
     def get_user_reaction(self, obj):
         request = self.context.get('request')
         if request and request.user.is_authenticated:
-            if hasattr(request.user, 'profile'):
-                reaction = obj.reactions.filter(
-                    profile=request.user.profile
-                ).first()
+            profile = getattr(request.user, 'profile', None)
+            if profile:
+                reaction = obj.reactions.filter(profile=profile).first()
                 return reaction.type if reaction else None
         return None
 
@@ -57,29 +61,30 @@ class PostDetailSerializer(serializers.ModelSerializer):
     likes_count = serializers.SerializerMethodField()
     dislikes_count = serializers.SerializerMethodField()
     comments_count = serializers.SerializerMethodField()
-    reports_count = serializers.SerializerMethodField()   
+    reports_count = serializers.SerializerMethodField()
     class Meta:
         model = Post
-        fields = '__all__' 
+        fields = '__all__'
+        read_only_fields = ('profile', 'views_count', 'created_at', 'updated_at')
     def get_likes_count(self, obj):
-        return obj.likes_count  
+        return obj.likes_count
     def get_dislikes_count(self, obj):
-        return obj.dislikes_count 
+        return obj.dislikes_count
     def get_comments_count(self, obj):
-        return obj.comments.count() 
+        return obj.comments.count()
     def get_reports_count(self, obj):
         return obj.reports_count
 
 class PostCreateSerializer(serializers.ModelSerializer):
-    category_ids = serializers.ListField(
-        child=serializers.IntegerField(),
-        write_only=True,
-        required=False,
-        allow_empty=True
-    )  
+    categories = serializers.PrimaryKeyRelatedField(
+        many=True,
+        queryset=Category.objects.all(),
+        required=False
+    )
+    media_files = PostMediaCreateSerializer(many=True, required=False)
     class Meta:
         model = Post
-        fields = ['title', 'content', 'category_ids']
+        fields = ['title', 'content', 'categories', 'media_files']
     def validate_title(self, value):
         if len(value) < 5:
             raise serializers.ValidationError("El título debe tener al menos 5 caracteres")
@@ -89,42 +94,27 @@ class PostCreateSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError("El contenido debe tener al menos 10 caracteres")
         return value
     def create(self, validated_data):
-        category_ids = validated_data.pop('category_ids', [])
-        post = Post.objects.create(**validated_data)
-        if category_ids:
-            categories = Category.objects.filter(id__in=category_ids)
-            post.categories.set(categories)
-        return post
-    
-
-class PostMediaCreateSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = PostMedia
-        fields = ['file', 'media_type']
-
-class PostCreateSerializer(serializers.ModelSerializer):
-    category_ids = serializers.ListField(
-        child=serializers.IntegerField(),
-        write_only=True,
-        required=False,
-        allow_empty=True
-    )
-    media_files = PostMediaCreateSerializer(many=True, required=False, write_only=True)
-    
-    class Meta:
-        model = Post
-        fields = ['title', 'content', 'category_ids', 'media_files']
-    
-    def create(self, validated_data):
         media_files_data = validated_data.pop('media_files', [])
-        category_ids = validated_data.pop('category_ids', [])
-        
+        categories = validated_data.pop('categories', [])
         post = Post.objects.create(**validated_data)
         for media_data in media_files_data:
             PostMedia.objects.create(post=post, **media_data)
-
-        if category_ids:
-            categories = Category.objects.filter(id__in=category_ids)
-            post.categories.set(categories)
+        post.categories.set(categories)
         
         return post
+
+class PostUpdateSerializer(serializers.ModelSerializer):
+    categories = serializers.PrimaryKeyRelatedField(
+        many=True,
+        queryset=Category.objects.all()
+    )
+    class Meta:
+        model = Post
+        fields = '__all__'
+        read_only_fields = ('profile', 'views_count', 'created_at', 'updated_at')
+    def update(self, instance, validated_data):
+        categories = validated_data.pop('categories', None)
+        instance = super().update(instance, validated_data)
+        if categories is not None:
+            instance.categories.set(categories)
+        return instance

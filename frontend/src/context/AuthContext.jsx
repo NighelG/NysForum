@@ -107,7 +107,7 @@ export const AuthProvider = ({ children }) => {
             register, 
             logout,
             deleteUser,
-            loginAsGuest, // ← NUEVO: Exportar función
+            loginAsGuest,
             loading,
             isAuthenticated: !!user 
         }}>

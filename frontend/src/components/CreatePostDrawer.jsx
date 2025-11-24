@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { useApi } from '../hooks/useApi'
 import { postService } from '../services/postService'
 import { cloudinaryService } from '../services/cloudinaryService'
@@ -8,39 +8,51 @@ function CreatePostDrawer({ isOpen, setIsOpen, onPostCreated }) {
   const [content, setContent] = useState('')
   const [mediaFiles, setMediaFiles] = useState([])
   const [errorMsg, setErrorMsg] = useState('')
+  const [categories, setCategories] = useState([])
+  const [selectedCategoryId, setSelectedCategoryId] = useState("")
   const { execute, loading } = useApi()
-
+  useEffect(() => {
+    if (isOpen) {
+      postService.getCategories()
+        .then(data => setCategories(data))
+        .catch(() => console.error("Error cargando categorías"))
+    }
+  }, [isOpen])
   const handleFileSelect = (event) => {
     const files = Array.from(event.target.files)
     setMediaFiles(prev => [...prev, ...files])
   }
-
   const removeFile = (index) => {
     setMediaFiles(prev => prev.filter((_, i) => i !== index))
   }
-
+  const getMediaType = (file) => {
+    if (file.type.startsWith('image/')) return 'image'
+    if (file.type.startsWith('video/')) return 'video'
+    if (file.type.startsWith('audio/')) return 'audio'
+    return 'image'
+  }
   const uploadMediaFiles = async () => {
     const uploadedMedia = []
-    
     for (const file of mediaFiles) {
       try {
-        const mediaData = await cloudinaryService.uploadMedia(file)
-        uploadedMedia.push(mediaData)
+        const mediaUrl = await cloudinaryService.uploadMedia(file)
+        const mediaType = getMediaType(file)
+        uploadedMedia.push({
+          file: mediaUrl,
+          media_type: mediaType
+        })
       } catch (error) {
         console.error('Error subiendo medio:', error)
         throw new Error(`Error subiendo ${file.name}`)
       }
     }
-    
     return uploadedMedia
   }
-
   const createPost = async () => {
     if (!title || !content) {
       setErrorMsg("Llena todos los espacios")
       return
     }
-
     if (title.length < 5) {
       setErrorMsg("El título debe tener al menos 5 caracteres")
       return
@@ -49,25 +61,26 @@ function CreatePostDrawer({ isOpen, setIsOpen, onPostCreated }) {
       setErrorMsg("El contenido debe tener al menos 10 caracteres")
       return
     }
-
+    if (!selectedCategoryId) {
+      setErrorMsg("Selecciona una categoría")
+      return
+    }
     try {
       let mediaData = []
       if (mediaFiles.length > 0) {
         mediaData = await uploadMediaFiles()
       }
-
       const newPost = {
         title,
         content,
-        category_ids: [],
+        categories: [parseInt(selectedCategoryId)],
         media_files: mediaData
       }
-
       await execute(() => postService.createPost(newPost))
-
       setTitle('')
       setContent('')
       setMediaFiles([])
+      setSelectedCategoryId("")
       setErrorMsg('')
       setIsOpen(false)
       
@@ -87,16 +100,22 @@ function CreatePostDrawer({ isOpen, setIsOpen, onPostCreated }) {
           <div className="drawer-header">
             <h2>Empezar discusión</h2>
             <button className="close-btn" onClick={() => setIsOpen(false)}>
-              <img className='tinyIcon' src="/img/closemenu.png" alt="X" />
+              <img className='tinyIcon' src="/img/closemenu.png" alt="Cerrar" />
             </button>
           </div>
           <div className="drawer-content">
             {errorMsg && <p className="error-message">{errorMsg}</p>}
-            <input type="text" placeholder="Título" className="input" value={title} onChange={(e) => setTitle(e.target.value)} />
-            <textarea placeholder="Redacta la discusión" className="textarea" value={content} onChange={(e) => setContent(e.target.value)} />
+            <input type="text" placeholder="Título" className="input"value={title} onChange={(e) => setTitle(e.target.value)}/>
+            <textarea placeholder="Redacta la discusión" className="textarea"value={content} onChange={(e) => setContent(e.target.value)} />
+            <select className="input" value={selectedCategoryId} onChange={(e) => setSelectedCategoryId(e.target.value)}>
+              <option value="">Selecciona categoría</option>
+              {categories.map(cat => (
+                <option key={cat.id} value={cat.id}>{cat.name}</option>
+              ))}
+            </select>
             <div className="media-section">
               <label className="file-input-label">
-                <input type="file" multiple accept="image/*,video/*,audio/*"onChange={handleFileSelect}className="file-input"/>
+                <input type="file" multiple accept="image/*,video/*,audio/*" onChange={handleFileSelect} className="file-input"/>
                 Agregar medios
               </label>
               {mediaFiles.length > 0 && (
@@ -104,7 +123,9 @@ function CreatePostDrawer({ isOpen, setIsOpen, onPostCreated }) {
                   {mediaFiles.map((file, index) => (
                     <div key={index} className="media-item">
                       <span>{file.name}</span>
-                      <button type="button" onClick={() => removeFile(index)}className="remove-file-btn"> ✕ </button>
+                      <button type="button" onClick={() => removeFile(index)}className="remove-file-btn">
+                        ✕
+                      </button>
                     </div>
                   ))}
                 </div>

@@ -18,7 +18,6 @@ function SideBar() {
     const toggleSidebar = () => {
         setIsCollapsed(!isCollapsed)
     }
-
     return (
         <>
             <div className={`sidebar ${isCollapsed ? 'collapsed' : ''}`}>

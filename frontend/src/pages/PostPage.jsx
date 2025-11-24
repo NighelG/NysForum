@@ -258,6 +258,11 @@ const PostPage = () => {
                                 ))}
                             </div>
                         )}
+                        {(!post.categories || post.categories.length === 0) && (
+                            <div className="post-categories no-cat">
+                                <span className="category-tag">Sin categoría</span>
+                            </div>
+                        )}
                         <div className="post-stats">
                             <button className={`like-btn ${post.user_reaction === 'like' ? 'active' : ''}`}onClick={handleLikePost}disabled={!user || user.isGuest}>
                                 <img className='icono-negro' src="/like.png" alt="Likes" /> 
