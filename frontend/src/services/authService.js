@@ -1,4 +1,4 @@
-import { apiRequest } from './apiConfig.js';
+import { apiRequest, apiFileUpload } from './apiConfig.js';
 
 export const authService = {
     login: async (username, password) => {
@@ -7,6 +7,7 @@ export const authService = {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ username, password }),
         });
+        
         if (!response.ok) {
             let errorMessage = 'Credenciales inválidas';  
             try {
@@ -22,6 +23,7 @@ export const authService = {
         }
         return await response.json();
     },
+    
     register: async (userData) => {
         const registrationData = {
             username: userData.username,
@@ -37,20 +39,11 @@ export const authService = {
             body: JSON.stringify(registrationData)
         });
     },
+    
     getCurrentUser: async () => {
         return await apiRequest('/users/profiles/me/');
     },
-    deleteProfile: async () => {
-        return await apiRequest('/users/profiles/me/delete/', {
-            method: 'POST',
-            body: JSON.stringify({ confirmation: true })
-        });
-    },
-    deleteUser: async () => {
-        return await apiRequest('/users/userdelete/', {
-            method: 'DELETE'
-        });
-    },
+    
     updateAccount: async (accountData) => {
         return await apiRequest('/users/profiles/me/', {
             method: 'PATCH',
@@ -64,13 +57,11 @@ export const authService = {
             body: JSON.stringify({ confirmation: true })
         });
     },
-    
-    deleteUser: async () => {
-        return await apiRequest('/users/userdelete/', {
-            method: 'DELETE'
-        });
+
+    updateAvatar: async (avatarFile) => {
+        const formData = new FormData();
+        formData.append('avatar', avatarFile);
+        
+        return await apiFileUpload('/users/profiles/me/avatar/', formData);
     }
-
-    
 };
-

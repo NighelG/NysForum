@@ -1,5 +1,5 @@
 // Configuración base para todas las llamadas al backend
-const API_BASE_URL = 'http://localhost:8000/api';
+const API_BASE_URL = 'http://localhost:8000';
 
 export const getAuthHeaders = () => {
     const token = localStorage.getItem('authToken');
@@ -16,9 +16,43 @@ export const getPublicHeaders = () => ({
     'Content-Type': 'application/json'
 });
 
-export const apiRequest = async (endpoint, options = {}) => {
+export const apiFileUpload = async (endpoint, formData) => {
+    const token = localStorage.getItem('authToken');
     const url = `${API_BASE_URL}${endpoint}`;
 
+    try {
+        console.log('Subiendo archivo a:', url);
+        
+        const response = await fetch(url, {
+            method: 'PATCH',
+            headers: {
+                ...(token && { 'Authorization': `Bearer ${token}` }),
+
+            },
+            body: formData,
+        });
+        const contentType = response.headers.get('content-type');
+        let responseData;
+        if (contentType && contentType.includes('application/json')) {
+            responseData = await response.json();
+        } else {
+            const textResponse = await response.text();
+            console.error('Respuesta no JSON recibida:', textResponse);
+            throw new Error('El servidor respondió con un formato incorrecto');
+        }
+        if (!response.ok) {
+            throw new Error(responseData.error || responseData.detail || 'Error subiendo archivo');
+        }
+        return responseData;
+    } catch (error) {
+        console.error('Error subiendo archivo:', error);
+        throw error;
+    }
+};
+
+export const apiRequest = async (endpoint, options = {}) => {
+    const url = `${API_BASE_URL}${endpoint}`;
+    console.log(`Haciendo petición a: ${url}`);
     const isPublicEndpoint = endpoint.includes('/register/') || endpoint.includes('/token/');
     const baseHeaders = isPublicEndpoint ? getPublicHeaders() : getAuthHeaders();
     const config = {
@@ -58,10 +92,8 @@ export const apiRequest = async (endpoint, options = {}) => {
             }
             throw new Error(errorMessage);
         }
-        
         const result = responseText ? JSON.parse(responseText) : {};
         return result;
-        
     } catch (error) {
         console.error('Error en petición API:', error);
         if (error.name === 'TypeError' && error.message.includes('Failed to fetch')) {
