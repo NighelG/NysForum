@@ -39,3 +39,15 @@ class PostMedia(models.Model):
     uploaded_at = models.DateTimeField(auto_now_add=True)   
     def __str__(self):
         return f"{self.media_type} en {self.post.title}"
+    
+class PostView(models.Model):
+    post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name='post_views')
+    profile = models.ForeignKey(Profile, on_delete=models.CASCADE)
+    viewed_at = models.DateTimeField(auto_now_add=True)
+    class Meta:
+        unique_together = ['post', 'profile']
+        indexes = [
+            models.Index(fields=['post', 'profile']),
+        ]
+    def __str__(self):
+        return f"{self.profile.user.username} viewed {self.post.title}"

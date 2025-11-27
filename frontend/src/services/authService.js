@@ -63,5 +63,9 @@ export const authService = {
         formData.append('avatar', avatarFile);
         
         return await apiFileUpload('/users/profiles/me/avatar/', formData);
+    },
+
+    getUserProfile: async (username) => {
+        return await apiRequest(`/users/profiles/${username}/`);
     }
 };

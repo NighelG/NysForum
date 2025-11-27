@@ -2,16 +2,16 @@ import { apiRequest } from './apiConfig.js';
 
 export const postService = {
     getPosts: async (categoryId = null) => {
-        const url = categoryId ? `/posts/?category=${categoryId}` : '/posts/';
+        const url = categoryId ? `/api/posts/?category=${categoryId}` : '/api/posts/';
         return await apiRequest(url);
     },
 
     getPost: async (postId) => {
-        return await apiRequest(`/posts/${postId}/`);
+        return await apiRequest(`/api/posts/${postId}/`);
     },
 
     createPost: async (postData) => {
-        return await apiRequest('/posts/', {
+        return await apiRequest('/api/posts/', {
             method: 'POST',
             body: JSON.stringify({
                 title: postData.title,
@@ -23,7 +23,7 @@ export const postService = {
     },
 
     updatePost: async (postId, postData) => {
-        return await apiRequest(`/posts/${postId}/`, {
+        return await apiRequest(`/api/posts/${postId}/`, {
             method: 'PATCH',
             body: JSON.stringify({
                 ...postData,
@@ -33,13 +33,13 @@ export const postService = {
     },
 
     deletePost: async (postId) => {
-        return await apiRequest(`/posts/${postId}/`, {
+        return await apiRequest(`/api/posts/${postId}/`, {
             method: 'DELETE'
         });
     },
 
     reactToPost: async (postId, reactionType) => {
-        return await apiRequest('/moderation/reactions/posts/', {
+        return await apiRequest('/api/moderation/reactions/posts/', {
             method: 'POST',
             body: JSON.stringify({
                 post: postId,
@@ -49,7 +49,7 @@ export const postService = {
     },
 
     getCategories: async () => {
-        return await apiRequest('/posts/categories/');
+        return await apiRequest('/api/posts/categories/');
     },
 
     uploadMedia: async (postId, file, mediaType) => {
@@ -57,12 +57,24 @@ export const postService = {
         formData.append('file', file);
         formData.append('media_type', mediaType);
         formData.append('post', postId);
-        return await apiRequest('/posts/media/', {
+        return await apiRequest('/api/posts/media/', {
             method: 'POST',
             body: formData,
         });
     },
+
     searchPosts: async (query) => {
-        return await apiRequest(`/posts/?search=${encodeURIComponent(query)}`);
-    }
+        return await apiRequest(`/api/posts/?search=${encodeURIComponent(query)}`);
+    },
+
+    getPostsByUserId: async (userId) => {
+        return await apiRequest(`/api/posts/?user_id=${userId}`);
+    },
+
+    incrementView: async (postId) => {
+        return await apiRequest(`/api/posts/${postId}/increment-view/`, {
+            method: 'POST'
+        });
+    },
+
 };

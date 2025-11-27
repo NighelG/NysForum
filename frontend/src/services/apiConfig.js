@@ -21,8 +21,6 @@ export const apiFileUpload = async (endpoint, formData) => {
     const url = `${API_BASE_URL}${endpoint}`;
 
     try {
-        console.log('Subiendo archivo a:', url);
-        
         const response = await fetch(url, {
             method: 'PATCH',
             headers: {
@@ -52,16 +50,18 @@ export const apiFileUpload = async (endpoint, formData) => {
 
 export const apiRequest = async (endpoint, options = {}) => {
     const url = `${API_BASE_URL}${endpoint}`;
-    console.log(`Haciendo petición a: ${url}`);
     const isPublicEndpoint = endpoint.includes('/register/') || endpoint.includes('/token/');
     const baseHeaders = isPublicEndpoint ? getPublicHeaders() : getAuthHeaders();
     const config = {
+        method: options.method || 'GET',
         headers: {
             ...baseHeaders,
             ...options.headers
-        },
-        ...options
+        }
     };
+    if (options.body && ['POST', 'PUT', 'PATCH'].includes(config.method)) {
+        config.body = options.body;
+    }
     try {
         const response = await fetch(url, config);
         if (response.status === 204) {

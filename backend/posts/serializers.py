@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Category, Post, PostMedia
+from .models import Category, Post, PostMedia, PostView
 from users.serializers import ProfileMinimalSerializer
 
 class CategorySerializer(serializers.ModelSerializer):
@@ -118,3 +118,9 @@ class PostUpdateSerializer(serializers.ModelSerializer):
         if categories is not None:
             instance.categories.set(categories)
         return instance
+    
+class PostViewSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = PostView
+        fields = ['id', 'post', 'profile', 'viewed_at']
+        read_only_fields = ['id', 'viewed_at']

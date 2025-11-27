@@ -2,28 +2,35 @@ import { apiRequest } from './apiConfig.js';
 
 export const commentService = {
     getComments: async () => {
-        return await apiRequest('/comments/');
+        return await apiRequest('/api/comments/');
     },
 
-    getCommentsByPostId: async (postId) => {
-        return await apiRequest(`/comments/?post=${postId}`);
+    getComment: async (id) => {
+        return await apiRequest(`/api/comments/${id}/`);
     },
 
     createComment: async (commentData) => {
-        return await apiRequest('/comments/', {
+        return await apiRequest('/api/comments/', {
             method: 'POST',
             body: JSON.stringify(commentData)
         });
     },
 
-    deleteComment: async (commentId) => {
-        return await apiRequest(`/comments/${commentId}/`, {
+    updateComment: async (id, commentData) => {
+        return await apiRequest(`/api/comments/${id}/`, {
+            method: 'PUT',
+            body: JSON.stringify(commentData)
+        });
+    },
+
+    deleteComment: async (id) => {
+        return await apiRequest(`/api/comments/${id}/`, {
             method: 'DELETE'
         });
     },
 
     reactToComment: async (commentId, reactionType) => {
-        return await apiRequest('/moderation/reactions/comments/', {
+        return await apiRequest('/api/moderation/reactions/comments/', {
             method: 'POST',
             body: JSON.stringify({
                 comment: commentId,
@@ -32,14 +39,7 @@ export const commentService = {
         });
     },
 
-    getComment: async (commentId) => {
-        return await apiRequest(`/comments/${commentId}/`);
+    getCommentsByUserId: async (userId) => {
+        return await apiRequest(`/api/comments/?user_id=${userId}`);
     },
-
-    updateComment: async (commentId, commentData) => {
-        return await apiRequest(`/comments/${commentId}/`, {
-            method: 'PUT',
-            body: JSON.stringify(commentData)
-        });
-    }
-};
+}

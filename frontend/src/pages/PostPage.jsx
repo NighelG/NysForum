@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useApi } from '../hooks/useApi'
+import { useavatar } from '../hooks/useavatar'
 import { useAuth } from '../context/AuthContext'
 import { postService } from '../services/postService'
 import { commentService } from '../services/commentService'
@@ -13,7 +14,6 @@ const PostPage = () => {
     const navigate = useNavigate()
     const { user } = useAuth()
     const { execute, loading, error } = useApi()
-
     const [post, setPost] = useState(null)
     const [comments, setComments] = useState([])
     const [searchTerm, setSearchTerm] = useState('')
@@ -43,24 +43,29 @@ const PostPage = () => {
                 const postComments = allComments.filter(
                     comment => comment.post === parseInt(id)
                 )
-                const adaptedComments = postComments.map(comment => ({
-                    id: comment.id,
-                    content: comment.content || '',
-                    created_at: comment.created_at,
-                    profile: {
-                        id: comment.profile?.id ?? null,
-                        avatar: comment.profile?.avatar || "/defaultPFP.jpg",
-                        username: comment.profile?.username || "Usuario",
-                        role: comment.profile?.role || "user",
-                    },
-                    media_files: comment.media_files || [],
-                    likes_count: comment.likes_count || 0,
-                    dislikes_count: comment.dislikes_count || 0,
-                    user_reaction: comment.user_reaction || null,
+                const adaptedComments = postComments.map(comment => {
+                    const username = comment.profile?.username || "Usuario"
+                    return {
+                        id: comment.id,
+                        content: comment.content || '',
+                        created_at: comment.created_at,
+                        profile: {
+                            id: comment.profile?.id ?? null,
+                            avatar: username !== "Usuario" 
+                                ? `http://localhost:8000/users/profiles/${username}/avatar/` 
+                                : "/defaultPFP.jpg",
+                            username: username,
+                            role: comment.profile?.role || "user",
+                        },
+                        media_files: comment.media_files || [],
+                        likes_count: comment.likes_count || 0,
+                        dislikes_count: comment.dislikes_count || 0,
+                        user_reaction: comment.user_reaction || null,
                         replies: (comment.replies || []).sort((a, b) => 
-                        new Date(a.created_at) - new Date(b.created_at)
-                    )
-                }))
+                            new Date(a.created_at) - new Date(b.created_at)
+                        )
+                    }
+                })
                 setComments(adaptedComments)
             }
         } catch (err) {
@@ -222,6 +227,11 @@ const PostPage = () => {
             </div>
         )
     }
+    const postUsername = post.username || post.profile?.username || 'Usuario'
+    const postAvatarUrl = postUsername !== 'Usuario' 
+        ? `http://localhost:8000/users/profiles/${postUsername}/avatar/` 
+        : "/defaultPFP.jpg"
+
     return (
         <div className="post-detail-page">
             <Sidebar />
@@ -230,10 +240,14 @@ const PostPage = () => {
                     <button onClick={() => navigate('/forum')} className="back-button">Volver al Foro</button>
                     <div className="post-card">
                         <div className="post-header">
-                            <img src={post.profile?.avatar || "/defaultPFP.jpg"} alt="Avatar" className="post-avatar" />
+                            <img src={postAvatarUrl} alt="Avatar" className="post-avatar" 
+                                onError={(e) => {
+                                    e.target.src = "/defaultPFP.jpg"
+                                }}
+                            />
                             <div className="post-user-info">
                                 <span className="post-username">
-                                    {post.username || post.profile?.username || 'Usuario'}
+                                    {postUsername}
                                 </span>
                                 <span className="post-date">{new Date(post.created_at).toLocaleString()}</span>
                             </div>
