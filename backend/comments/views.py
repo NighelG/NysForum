@@ -54,7 +54,6 @@ class CommentListCreateView(generics.ListCreateAPIView):
             'media_files',
             Prefetch('replies', queryset=Comment.objects.select_related('profile__user').prefetch_related('media_files'))
         ).filter(parent__isnull=True)
-        
         # Filtro por user_id
         user_id = self.request.query_params.get('user_id')
         if user_id:

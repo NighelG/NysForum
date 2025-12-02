@@ -104,3 +104,37 @@ class AdminProfileDeleteSerializer(serializers.Serializer):
         if not value:
             raise serializers.ValidationError("Debe confirmar la eliminación del perfil")
         return value
+    
+class ProfileUpdateSerializer(serializers.ModelSerializer):
+    first_name = serializers.CharField(source='user.first_name', required=False)
+    last_name = serializers.CharField(source='user.last_name', required=False)
+    email = serializers.EmailField(source='user.email', required=False)
+    class Meta:
+        model = Profile
+        fields = ['bio', 'first_name', 'last_name', 'email']
+    def update(self, instance, validated_data):
+        user_data = validated_data.pop('user', {})
+        if user_data:
+            user = instance.user
+            for attr, value in user_data.items():
+                setattr(user, attr, value)
+            user.save()
+        return super().update(instance, validated_data)
+    
+class AdminProfileUpdateSerializer(serializers.ModelSerializer):
+    first_name = serializers.CharField(source='user.first_name', required=False)
+    last_name = serializers.CharField(source='user.last_name', required=False)
+    email = serializers.EmailField(source='user.email', required=False)
+    role = serializers.ChoiceField(choices=Profile.ROLE_CHOICES, required=False)
+    status = serializers.ChoiceField(choices=Profile.STATUS_CHOICES, required=False)
+    class Meta:
+        model = Profile
+        fields = ['bio', 'first_name', 'last_name', 'email', 'role', 'status']
+    def update(self, instance, validated_data):
+        user_data = validated_data.pop('user', {})
+        if user_data:
+            user = instance.user
+            for attr, value in user_data.items():
+                setattr(user, attr, value)
+            user.save()
+        return super().update(instance, validated_data)

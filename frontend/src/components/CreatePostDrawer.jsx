@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { useApi } from '../hooks/useApi'
-import { postService } from '../services/postService'
-import { cloudinaryService } from '../services/cloudinaryService'
+import { postService } from '../services/postService.js'
+import mediaService from '../services/mediaSerivce.js'
 
 function CreatePostDrawer({ isOpen, setIsOpen, onPostCreated }) {
   const [title, setTitle] = useState('')
@@ -20,33 +20,24 @@ function CreatePostDrawer({ isOpen, setIsOpen, onPostCreated }) {
   }, [isOpen])
   const handleFileSelect = (event) => {
     const files = Array.from(event.target.files)
-    setMediaFiles(prev => [...prev, ...files])
+    const validFiles = files.filter(file => {
+      const mediaType = mediaService.getMediaType(file)
+      const sizeError = mediaService.getSizeErrorMessage(file)
+      if (!mediaService.validateFileType(file, mediaType)) {
+        setErrorMsg(`Tipo de archivo no soportado: ${file.name}`)
+        return false
+      }
+      if (sizeError) {
+        setErrorMsg(sizeError)
+        return false
+      }
+      return true
+    })
+    setMediaFiles(prev => [...prev, ...validFiles])
+    setErrorMsg('')
   }
   const removeFile = (index) => {
     setMediaFiles(prev => prev.filter((_, i) => i !== index))
-  }
-  const getMediaType = (file) => {
-    if (file.type.startsWith('image/')) return 'image'
-    if (file.type.startsWith('video/')) return 'video'
-    if (file.type.startsWith('audio/')) return 'audio'
-    return 'image'
-  }
-  const uploadMediaFiles = async () => {
-    const uploadedMedia = []
-    for (const file of mediaFiles) {
-      try {
-        const mediaUrl = await cloudinaryService.uploadMedia(file)
-        const mediaType = getMediaType(file)
-        uploadedMedia.push({
-          file: mediaUrl,
-          media_type: mediaType
-        })
-      } catch (error) {
-        console.error('Error subiendo medio:', error)
-        throw new Error(`Error subiendo ${file.name}`)
-      }
-    }
-    return uploadedMedia
   }
   const createPost = async () => {
     if (!title || !content) {
@@ -66,15 +57,14 @@ function CreatePostDrawer({ isOpen, setIsOpen, onPostCreated }) {
       return
     }
     try {
-      let mediaData = []
-      if (mediaFiles.length > 0) {
-        mediaData = await uploadMediaFiles()
-      }
       const newPost = {
         title,
         content,
         categories: [parseInt(selectedCategoryId)],
-        media_files: mediaData
+        media_files: mediaFiles.map(file => ({
+          file: file,
+          media_type: mediaService.getMediaType(file)
+        }))
       }
       await execute(() => postService.createPost(newPost))
       setTitle('')
@@ -83,7 +73,6 @@ function CreatePostDrawer({ isOpen, setIsOpen, onPostCreated }) {
       setSelectedCategoryId("")
       setErrorMsg('')
       setIsOpen(false)
-      
       if (onPostCreated) {
         onPostCreated()
       }
@@ -105,7 +94,7 @@ function CreatePostDrawer({ isOpen, setIsOpen, onPostCreated }) {
           </div>
           <div className="drawer-content">
             {errorMsg && <p className="error-message">{errorMsg}</p>}
-            <input type="text" placeholder="Título" className="input"value={title} onChange={(e) => setTitle(e.target.value)}/>
+            <input type="text" placeholder="Título" className="input" value={title} onChange={(e) => setTitle(e.target.value)}/>
             <textarea placeholder="Redacta la discusión" className="textarea"value={content} onChange={(e) => setContent(e.target.value)} />
             <select className="input" value={selectedCategoryId} onChange={(e) => setSelectedCategoryId(e.target.value)}>
               <option value="">Selecciona categoría</option>
@@ -122,18 +111,14 @@ function CreatePostDrawer({ isOpen, setIsOpen, onPostCreated }) {
                 <div className="media-preview">
                   {mediaFiles.map((file, index) => (
                     <div key={index} className="media-item">
-                      <span>{file.name}</span>
-                      <button type="button" onClick={() => removeFile(index)}className="remove-file-btn">
-                        ✕
-                      </button>
+                      <span>{file.name} ({mediaService.getMediaType(file)})</span>
+                      <button type="button" onClick={() => removeFile(index)}className="remove-file-btn">✕</button>
                     </div>
                   ))}
                 </div>
               )}
             </div>
-            <button className="submit-btn" onClick={createPost} disabled={loading}>
-              {loading ? 'Publicando...' : 'Publicar'}
-            </button>
+            <button className="submit-btn" onClick={createPost} disabled={loading}>{loading ? 'Publicando...' : 'Publicar'}</button>
           </div>
         </div>
       </div>

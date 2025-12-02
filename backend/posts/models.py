@@ -1,7 +1,6 @@
 from django.db import models
 from django.core.validators import MinLengthValidator
 from users.models import Profile
-from cloudinary.models import CloudinaryField
 
 class Category(models.Model):
     name = models.CharField(max_length=50, unique=True)
@@ -18,7 +17,7 @@ class Post(models.Model):
     is_pinned = models.BooleanField(default=False)
     views_count = models.PositiveIntegerField(default=0)
     created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True) 
+    updated_at = models.DateTimeField(auto_now=True)
     @property
     def likes_count(self):
         return self.reactions.filter(type='like').count()
@@ -32,14 +31,25 @@ class Post(models.Model):
         return f"{self.title} por {self.profile.user.username}"
 
 class PostMedia(models.Model):
-    MEDIA_TYPES = [('image', 'Imagen'), ('video', 'Video'), ('audio', 'Audio')]
+    MEDIA_TYPES = [
+        ('image', 'Imagen'),
+        ('video', 'Video'), 
+        ('audio', 'Audio')
+    ]
     post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name='media_files')
-    file = CloudinaryField('media')
-    media_type = models.CharField(max_length=10, choices=MEDIA_TYPES)
-    uploaded_at = models.DateTimeField(auto_now_add=True)   
+    file_id = models.CharField(max_length=255, null=True, blank=True)
+    filename = models.CharField(max_length=255, null=True, blank=True)
+    media_type = models.CharField(max_length=10, choices=MEDIA_TYPES, null=True, blank=True)
+    content_type = models.CharField(max_length=100, null=True, blank=True)
+    file_size = models.PositiveIntegerField(default=0)
+    uploaded_at = models.DateTimeField(auto_now_add=True)
+    class Meta:
+        verbose_name = 'Post Media'
+        verbose_name_plural = 'Post Media'
+        ordering = ['uploaded_at']
     def __str__(self):
-        return f"{self.media_type} en {self.post.title}"
-    
+        return f"{self.media_type} - {self.filename} en {self.post.title}"
+
 class PostView(models.Model):
     post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name='post_views')
     profile = models.ForeignKey(Profile, on_delete=models.CASCADE)

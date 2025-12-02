@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useApi } from '../hooks/useApi'
-import { useavatar } from '../hooks/useavatar'
 import { postService } from '../services/postService'
 import CreatePostDrawer from '../components/CreatePostDrawer'
 import Sidebar from '../components/SideBar'

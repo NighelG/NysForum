@@ -14,7 +14,8 @@ from .serializers import (
     ProfileSerializer,
     ProfileUpdateSerializer,
     ProfileDeleteSerializer,
-    AdminProfileDeleteSerializer
+    AdminProfileDeleteSerializer,
+    AdminProfileUpdateSerializer
 )
 
 class RegisterView(generics.CreateAPIView):
@@ -36,19 +37,48 @@ class ProfileListView(generics.ListAPIView):
 
 class ProfileDetailView(generics.RetrieveUpdateAPIView):
     queryset = Profile.objects.select_related('user').all()
-    serializer_class = ProfileSerializer
     permission_classes = [IsAuthenticatedOrReadOnly]
+    def get_serializer_class(self):
+        if self.request.method in ['PUT', 'PATCH']:
+            if (hasattr(self.request.user, 'profile') and
+                self.request.user.profile.role in ['admin', 'true_admin'] and
+                self.kwargs.get('username') != self.request.user.username):
+                return AdminProfileUpdateSerializer
+            return ProfileUpdateSerializer
+        return ProfileSerializer
     def get_object(self):
         username = self.kwargs.get('username')
         return get_object_or_404(Profile, user__username=username)
     def update(self, request, *args, **kwargs):
         profile = self.get_object()
+        current_user_profile = request.user.profile
         if profile.user != request.user:
+            if current_user_profile.role not in ['admin', 'true_admin']:
+                return Response(
+                    {'error': 'Solo los administradores pueden editar otros perfiles'},
+                    status=status.HTTP_403_FORBIDDEN
+                )
+            if not self.can_admin_update_profile(current_user_profile, profile):
+                return Response(
+                    {'error': 'No tienes permisos suficientes para modificar este perfil'},
+                    status=status.HTTP_403_FORBIDDEN
+                )
+        if (profile.user == request.user and 
+            any(field in request.data for field in ['role', 'status'])):
             return Response(
-                {'error': 'No tienes permiso para editar este perfil'},
+                {'error': 'No puedes cambiar tu propio rol o estado'},
                 status=status.HTTP_403_FORBIDDEN
             )
         return super().update(request, *args, **kwargs)
+    def can_admin_update_profile(self, current_profile, target_profile):
+        current_role = current_profile.role
+        target_role = target_profile.role
+        if current_role == 'true_admin':
+            return True
+        if current_role == 'admin':
+            return target_role in ['user', 'moderator']
+        return False
+
 
 class ProfileMeView(generics.RetrieveUpdateAPIView):
     serializer_class = ProfileSerializer
@@ -293,3 +323,4 @@ class TestMongoDBView(APIView):
             print(f" Error en TestMongoDBView: {e}")
             print(f" Traceback: {traceback.format_exc()}")
             return Response({'error': str(e)}, status=500)
+        

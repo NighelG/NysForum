@@ -15,6 +15,14 @@ export const getAuthHeaders = () => {
 export const getPublicHeaders = () => ({
     'Content-Type': 'application/json'
 });
+export const getFormDataHeaders = () => {
+    const token = localStorage.getItem('authToken');
+    const headers = {};
+    if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+    }
+    return headers;
+};
 
 export const apiFileUpload = async (endpoint, formData) => {
     const token = localStorage.getItem('authToken');
@@ -25,7 +33,6 @@ export const apiFileUpload = async (endpoint, formData) => {
             method: 'PATCH',
             headers: {
                 ...(token && { 'Authorization': `Bearer ${token}` }),
-
             },
             body: formData,
         });
@@ -51,7 +58,13 @@ export const apiFileUpload = async (endpoint, formData) => {
 export const apiRequest = async (endpoint, options = {}) => {
     const url = `${API_BASE_URL}${endpoint}`;
     const isPublicEndpoint = endpoint.includes('/register/') || endpoint.includes('/token/');
-    const baseHeaders = isPublicEndpoint ? getPublicHeaders() : getAuthHeaders();
+    let baseHeaders;
+    const isFormData = options.body instanceof FormData;
+    if (isFormData) {
+        baseHeaders = getFormDataHeaders();
+    } else {
+        baseHeaders = isPublicEndpoint ? getPublicHeaders() : getAuthHeaders();
+    }
     const config = {
         method: options.method || 'GET',
         headers: {
@@ -59,7 +72,7 @@ export const apiRequest = async (endpoint, options = {}) => {
             ...options.headers
         }
     };
-    if (options.body && ['POST', 'PUT', 'PATCH'].includes(config.method)) {
+    if (options.body) {
         config.body = options.body;
     }
     try {
