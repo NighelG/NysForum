@@ -761,3 +761,63 @@
     color: #666;
     text-align: center;
 }
+
+.comment-media-gallery,
+.reply-media-gallery {
+    margin-top: 10px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.comment-media,
+.reply-media {
+    max-width: 200px;
+    max-height: 200px;
+    border-radius: 8px;
+    object-fit: cover;
+}
+
+.media-item {
+    position: relative;
+}
+
+.media-item video,
+.media-item audio {
+    max-width: 200px;
+    border-radius: 8px;
+}
+
+.reply-form .media-section,
+.nested-reply-form .media-section {
+    margin: 10px 0;
+}
+
+.media-preview {
+    margin-top: 10px;
+}
+
+.media-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 5px 10px;
+    background: #f5f5f5;
+    border-radius: 4px;
+    margin-bottom: 5px;
+}
+
+.remove-file-btn {
+    background: #ff4444;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 20px;
+    height: 20px;
+    cursor: pointer;
+    font-size: 12px;
+}
+
+.remove-file-btn:hover {
+    background: #cc0000;
+}

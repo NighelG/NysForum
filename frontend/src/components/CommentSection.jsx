@@ -1,7 +1,7 @@
 import React from 'react'
 import ReplyComment from './ReplyComment'
 import { useavatar } from '../hooks/useavatar'
-
+import mediaService from '../services/mediaSerivce.js'
 
 const CommentSection = ({ 
     comment, 
@@ -29,25 +29,43 @@ const CommentSection = ({
         if (comment.profile?.username) return comment.profile.username
         return 'Usuario'
     }
-
     const getCommentAvatar = () => {
         const username = getCommentUsername()
         return username !== 'Usuario' 
             ? `http://localhost:8000/users/profiles/${username}/avatar/` 
             : "/defaultPFP.jpg"
     }
-
+    const renderCommentMedia = () => {
+        if (!comment.media_files || comment.media_files.length === 0) return null;
+        return (
+            <div className="comment-media-gallery">
+                {comment.media_files.map(media => {
+                    const mediaUrl = mediaService.getUrlFromMediaObject(media) || 
+                                mediaService.getMediaUrl(media.file_id, 'comment');
+                    if (!mediaUrl) return null;
+                    return (
+                        <div key={media.id || media.file_id} className="media-item">
+                            {media.media_type === 'image' && (
+                                <img src={mediaUrl} alt={`Media de comentario`}className="comment-media"onError={(e) => {e.target.src = '/img/placeholder-image.jpg'
+                                        console.error('Error cargando imagen de comentario:', mediaUrl)
+                                    }}/>
+                            )}
+                            {media.media_type === 'video' && (
+                                <video controls className="comment-media"><source src={mediaUrl} type={media.content_type} />Tu navegador no soporta el elemento video.</video>
+                            )}
+                        </div>
+                    )
+                })}
+            </div>
+        )
+    }
     return (
         <div className="comment-item">
             <div className="comment-header">
-                <img 
-                    src={getCommentAvatar()} 
-                    alt="Avatar" 
-                    className="comment-avatar" 
+                <img src={getCommentAvatar()} alt="Avatar" className="comment-avatar" 
                     onError={(e) => {
                         e.target.src = "/defaultPFP.jpg"
-                    }}
-                />
+                    }}/>
                 <div className="comment-user-info">
                     <span className="comment-username">{getCommentUsername()}</span>
                     <span className="comment-date">{new Date(comment.created_at).toLocaleString()}</span>
@@ -55,6 +73,7 @@ const CommentSection = ({
             </div>
             <div className="comment-content">
                 <p>{comment.content}</p>
+                {renderCommentMedia()}
             </div>
             <div className="comment-actions">
                 <button className={`like-btn ${comment.user_reaction === 'like' ? 'active' : ''}`}
@@ -67,17 +86,14 @@ const CommentSection = ({
                     <img src="/dislike.png" alt="Dislike" className="reaction-icon" />
                     {comment.dislikes_count}
                 </button>
-                <button className="reply-btn" onClick={() => onStartReply(comment.id)} disabled={!currentUser || currentUser.isGuest}>
-                    Responder
-                </button>
+                <button className="reply-btn" onClick={() => onStartReply(comment.id)} disabled={!currentUser || currentUser.isGuest}>Responder</button>
             </div>
             {isReplying && (
                 <div className="reply-form">
-                    <textarea value={replyContent} onChange={(e) => onReplyContentChange(e.target.value, comment.id)}
-                        placeholder="Escribe tu respuesta..." className="reply-textarea" rows="3" />
+                    <textarea value={replyContent} onChange={(e) => onReplyContentChange(e.target.value, comment.id)} placeholder="Escribe tu respuesta..." className="reply-textarea" rows="3" />
                     <div className="reply-form-actions">
-                        <button type="button" className="btn-cancel"onClick={onCancelReply}>Cancelar</button>
-                        <button type="button"onClick={() => onReply(comment.id)} disabled={!replyContent.trim()} className="btn-submit">Responder</button>
+                        <button type="button" className="btn-cancel" onClick={onCancelReply}>Cancelar</button>
+                        <button type="button" onClick={() => onReply(comment.id)} disabled={!replyContent.trim()} className="btn-submit">Responder</button>
                     </div>
                 </div>
             )}
@@ -100,10 +116,10 @@ const CommentSection = ({
                     />
                 ))}
                 {showExpandButton && !expandedReplies[comment.id] && (
-                    <button className="show-more-replies-btn" onClick={() => onToggleReplies(comment.id)}>Ver {hiddenRepliesCount}respuestas más</button>
+                    <button className="show-more-replies-btn" onClick={() => onToggleReplies(comment.id)}>Ver {hiddenRepliesCount} respuestas más</button>
                 )}
                 {expandedReplies[comment.id] && (
-                    <button className="reply-at-end-btn"onClick={() => onStartReply(comment.id)}disabled={!currentUser || currentUser.isGuest}>Responder</button>
+                    <button className="reply-at-end-btn" onClick={() => onStartReply(comment.id)} disabled={!currentUser || currentUser.isGuest}> Responder </button>
                 )}
                 </div>
             )}

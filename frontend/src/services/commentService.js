@@ -10,10 +10,34 @@ export const commentService = {
     },
 
     createComment: async (commentData) => {
-        return await apiRequest('/api/comments/', {
-            method: 'POST',
-            body: JSON.stringify(commentData)
-        });
+        try {
+            if (commentData.media_files && commentData.media_files.length > 0) {
+                const formData = new FormData();
+                formData.append('post', commentData.post);
+                formData.append('content', commentData.content);
+                
+                if (commentData.parent) {
+                    formData.append('parent', commentData.parent);
+                }
+                commentData.media_files.forEach((media, index) => {
+                    if (media.file instanceof File) {
+                        formData.append('media_files', media.file);
+                    }
+                });
+                return await apiRequest('/api/comments/', {
+                    method: 'POST',
+                    body: formData
+                });
+            } else {
+                return await apiRequest('/api/comments/', {
+                    method: 'POST',
+                    body: JSON.stringify(commentData)
+                });
+            }
+        } catch (error) {
+            console.error('Error en commentService.createComment:', error);
+            throw error;
+        }
     },
 
     updateComment: async (id, commentData) => {

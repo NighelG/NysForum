@@ -3,11 +3,34 @@ import { apiRequest } from './apiConfig';
 export const mediaService = {
     /**
      * @param {string} fileId
+     * @param {string} mediaSource
      * @returns {string}
      */
-    getMediaUrl: (fileId) => {
+    getMediaUrl: (fileId, mediaSource = 'post') => {
         if (!fileId) return null;
+        if (mediaSource === 'comment') {
+            return `/api/comments/media/${fileId}/`;
+        }
         return `/api/posts/media/${fileId}/`;
+    },
+    /**
+     * @param {Object} mediaObject
+     * @returns {string}
+     */
+    getUrlFromMediaObject: (mediaObject) => {
+        if (!mediaObject) return null;
+        if (mediaObject.file_url) {
+            return mediaObject.file_url;
+        }
+        if (mediaObject.file_id) {
+            if (mediaObject.comment_id || mediaObject.comment) {
+                return `/api/comments/media/${mediaObject.file_id}/`;
+            } else {
+                return `/api/posts/media/${mediaObject.file_id}/`;
+            }
+        }
+        
+        return null;
     },
     /**
      * @param {File} file
@@ -16,9 +39,9 @@ export const mediaService = {
     getMediaType: (file) => {
         if (file.type.startsWith('image/')) return 'image';
         if (file.type.startsWith('video/')) return 'video';
-        if (file.type.startsWith('audio/')) return 'audio';
         return 'image';
     },
+    
     /**
      * @param {File} file
      * @param {string} mediaType
@@ -31,8 +54,6 @@ export const mediaService = {
                 return fileType.startsWith('image/');
             case 'video':
                 return fileType.startsWith('video/');
-            case 'audio':
-                return fileType.startsWith('audio/');
             default:
                 return false;
         }

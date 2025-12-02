@@ -33,8 +33,11 @@ class CommentMedia(models.Model):
         ('audio', 'Audio')
     ]
     comment = models.ForeignKey(Comment, on_delete=models.CASCADE, related_name='media_files')
-    file = CloudinaryField('media')
-    media_type = models.CharField(max_length=10, choices=MEDIA_TYPES)
+    file_id = models.CharField(max_length=255, null=True, blank=True)
+    filename = models.CharField(max_length=255, null=True, blank=True)
+    media_type = models.CharField(max_length=10, choices=MEDIA_TYPES, null=True, blank=True)
+    content_type = models.CharField(max_length=100, null=True, blank=True)
+    file_size = models.PositiveIntegerField(default=0)
     uploaded_at = models.DateTimeField(auto_now_add=True)
     def __str__(self):
-        return f"{self.media_type} en comentario {self.comment.id}"
+        return f"{self.media_type} - {self.filename} en comentario {self.comment.id}"

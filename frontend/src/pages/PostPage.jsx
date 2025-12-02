@@ -19,6 +19,10 @@ const PostPage = () => {
     const [searchTerm, setSearchTerm] = useState('')
     const [isFormOpen, setIsFormOpen] = useState(false)
     const [commentContent, setCommentContent] = useState('')
+    const [commentMediaFiles, setCommentMediaFiles] = useState([])
+    const [commentErrorMsg, setCommentErrorMsg] = useState('')
+    const [replyMediaFiles, setReplyMediaFiles] = useState({})
+    const [replyErrorMsg, setReplyErrorMsg] = useState('')
     const [replyingTo, setReplyingTo] = useState(null)
     const [replyContents, setReplyContents] = useState({})
     const [expandedReplies, setExpandedReplies] = useState({})
@@ -40,25 +44,24 @@ const PostPage = () => {
             const all = await execute(commentService.getComments)
             if (!all || !Array.isArray(all)) return setComments([])
             const postComments = all.filter(c => c.post === parseInt(id))
-            const adapted = postComments.map(c => {
-                const username = c.profile?.username || 'Usuario'
-                return {
-                    id: c.id,
-                    content: c.content || '',
-                    created_at: c.created_at,
-                    profile: {
-                        id: c.profile?.id ?? null,
-                        avatar: username !== 'Usuario' ? `http://localhost:8000/users/profiles/${username}/avatar/` : '/defaultPFP.jpg',
-                        username,
-                        role: c.profile?.role || 'user'
-                    },
-                    media_files: c.media_files || [],
-                    likes_count: c.likes_count || 0,
-                    dislikes_count: c.dislikes_count || 0,
-                    user_reaction: c.user_reaction || null,
-                    replies: (c.replies || []).sort((a, b) => new Date(a.created_at) - new Date(b.created_at))
-                }
-            })
+            const adapted = postComments.map(c => ({
+                id: c.id,
+                content: c.content || '',
+                created_at: c.created_at,
+                profile: {
+                    id: c.profile?.id ?? null,
+                    avatar: c.profile?.username !== 'Usuario' ? 
+                        `http://localhost:8000/users/profiles/${c.profile?.username}/avatar/` : 
+                        '/defaultPFP.jpg',
+                    username: c.profile?.username || 'Usuario',
+                    role: c.profile?.role || 'user'
+                },
+                media_files: c.media_files || [],
+                likes_count: c.likes_count || 0,
+                dislikes_count: c.dislikes_count || 0,
+                user_reaction: c.user_reaction || null,
+                replies: (c.replies || []).sort((a, b) => new Date(a.created_at) - new Date(b.created_at))
+            }))
             setComments(adapted)
         } catch (err) {
             console.error('Error cargando comentarios:', err)
@@ -101,59 +104,152 @@ const PostPage = () => {
             console.error('Error dando dislike:', err)
         }
     }
+    const validateFile = (file) => {
+        const mediaType = mediaService.getMediaType(file)
+        const sizeError = mediaService.getSizeErrorMessage(file)
+        
+        if (!mediaService.validateFileType(file, mediaType)) {
+            return { valid: false, error: `Tipo de archivo no soportado: ${file.name}` }
+        }
+        if (sizeError) {
+            return { valid: false, error: sizeError }
+        }
+        return { valid: true, mediaType }
+    }
+    const handleCommentFileSelect = (event) => {
+        const files = Array.from(event.target.files)
+        const validFiles = files.filter(file => {
+            const result = validateFile(file)
+            if (!result.valid) {
+                setCommentErrorMsg(result.error)
+                return false
+            }
+            return true
+        })
+        setCommentMediaFiles(prev => [...prev, ...validFiles])
+        setCommentErrorMsg('')
+    }
+    const removeCommentFile = (index) => {
+        setCommentMediaFiles(prev => prev.filter((_, i) => i !== index))
+        setCommentErrorMsg('')
+    }
+    const handleReplyFileSelect = (event, commentId, parentId = null) => {
+        const files = Array.from(event.target.files)
+        const validFiles = files.filter(file => {
+            const result = validateFile(file)
+            if (!result.valid) {
+                setReplyErrorMsg(result.error)
+                return false
+            }
+            return true
+        })
+        const key = parentId ? `${parentId}-${commentId}` : commentId
+        setReplyMediaFiles(prev => ({
+            ...prev,
+            [key]: [...(prev[key] || []), ...validFiles]
+        }))
+        setReplyErrorMsg('')
+    }
+    const removeReplyFile = (index, commentId, parentId = null) => {
+        const key = parentId ? `${parentId}-${commentId}` : commentId
+        setReplyMediaFiles(prev => ({
+            ...prev,
+            [key]: prev[key].filter((_, i) => i !== index)
+        }))
+        setReplyErrorMsg('')
+    }
     const handleSubmitComment = async e => {
         e.preventDefault()
         if (!commentContent.trim() || !user || user.isGuest) return
         try {
-            await execute(() => commentService.createComment({ 
-                content: commentContent.trim(), 
-                post: parseInt(id) 
-            }))
-            setCommentContent('')
-            setIsFormOpen(false)
+            const commentData = {
+                content: commentContent.trim(),
+                post: parseInt(id),
+                media_files: commentMediaFiles.map(file => ({
+                    file: file,
+                    media_type: mediaService.getMediaType(file)
+                }))
+            }
+            await execute(() => commentService.createComment(commentData))
+            resetCommentForm()
             loadComments()
         } catch (err) {
             console.error('Error publicando comentario:', err)
+            setCommentErrorMsg(err.message || 'Error al publicar comentario')
         }
+    }
+    const resetCommentForm = () => {
+        setCommentContent('')
+        setCommentMediaFiles([])
+        setCommentErrorMsg('')
+        setIsFormOpen(false)
     }
     const handleReply = async (commentId, parentId = null) => {
         if (!user || user.isGuest) return
+        const key = parentId ? `${parentId}-${commentId}` : commentId
         const replyContent = parentId ? replyContents[parentId]?.[commentId] : replyContents[commentId]
-        if (!replyContent?.trim()) return
+        const files = replyMediaFiles[key] || []
+        if (!replyContent?.trim() && files.length === 0) return
         try {
-            await execute(() => commentService.createComment({
-                content: replyContent.trim(),
+            const replyData = {
+                content: replyContent?.trim() || '',
                 post: parseInt(id),
-                parent: parentId || commentId
-            }))
-            if (parentId) {
-                setReplyContents(prev => ({ ...prev, [parentId]: { ...prev[parentId], [commentId]: '' } }))
-            } else {
-                setReplyContents(prev => ({ ...prev, [commentId]: '' }))
+                parent: parentId || commentId,
+                media_files: files.map(file => ({
+                    file: file,
+                    media_type: mediaService.getMediaType(file)
+                }))
             }
-            setReplyingTo(null)
+            await execute(() => commentService.createComment(replyData))
+            resetReplyForm(commentId, parentId)
             loadComments()
         } catch (err) {
             console.error('Error publicando respuesta:', err)
+            setReplyErrorMsg(err.message || 'Error al publicar respuesta')
         }
+    }
+    const resetReplyForm = (commentId, parentId = null) => {
+        const key = parentId ? `${parentId}-${commentId}` : commentId
+        if (parentId) {
+            setReplyContents(prev => ({ 
+                ...prev, 
+                [parentId]: { ...prev[parentId], [commentId]: '' } 
+            }))
+        } else {
+            setReplyContents(prev => ({ ...prev, [commentId]: '' }))
+        }
+        setReplyMediaFiles(prev => ({ ...prev, [key]: [] }))
+        setReplyingTo(null)
     }
     const handleStartReply = (commentId, parentId = null) => {
         setReplyingTo(parentId ? `${parentId}-${commentId}` : commentId)
         if (parentId) {
-            setReplyContents(prev => ({ ...prev, [parentId]: { ...prev[parentId], [commentId]: prev[parentId]?.[commentId] || '' } }))
+            setReplyContents(prev => ({ 
+                ...prev, 
+                [parentId]: { ...prev[parentId], [commentId]: prev[parentId]?.[commentId] || '' } 
+            }))
         } else {
             setReplyContents(prev => ({ ...prev, [commentId]: prev[commentId] || '' }))
         }
     }
-    const handleCancelReply = () => setReplyingTo(null)
+    const handleCancelReply = () => {
+        setReplyingTo(null)
+        setReplyErrorMsg('')
+    }
     const handleReplyContentChange = (content, commentId, parentId = null) => {
         if (parentId) {
-            setReplyContents(prev => ({ ...prev, [parentId]: { ...prev[parentId], [commentId]: content } }))
+            setReplyContents(prev => ({ 
+                ...prev, 
+                [parentId]: { ...prev[parentId], [commentId]: content } 
+            }))
         } else {
             setReplyContents(prev => ({ ...prev, [commentId]: content }))
         }
     }
-    const toggleReplies = commentId => setExpandedReplies(prev => ({ ...prev, [commentId]: !prev[commentId] }))
+    const toggleReplies = commentId => setExpandedReplies(prev => ({ 
+        ...prev, 
+        [commentId]: !prev[commentId] 
+    }))
     const filteredComments = comments.filter(c => 
         (c.profile?.username || 'Usuario').toLowerCase().includes(searchTerm.toLowerCase())
     )
@@ -175,20 +271,43 @@ const PostPage = () => {
                                 />
                             )}
                             {media.media_type === 'video' && (
-                                <video controls>
-                                    <source src={mediaUrl} type={media.content_type} />
-                                    Tu navegador no soporta el elemento video.
-                                </video>
-                            )}
-                            {media.media_type === 'audio' && (
-                                <audio controls>
-                                    <source src={mediaUrl} type={media.content_type} />
-                                    Tu navegador no soporta el elemento audio.
-                                </audio>
+                                <video controls><source src={mediaUrl} type={media.content_type} />Tu navegador no soporta el elemento video.</video>
                             )}
                         </div>
                     )
                 })}
+            </div>
+        )
+    }
+    const renderCommentMediaSection = () => (
+        <div className="media-section">
+            <label className="file-input-label">
+                <input type="file" multiple accept="image/*,video/*" onChange={handleCommentFileSelect} className="file-input"/> Agregar medios
+            </label>
+            {commentMediaFiles.length > 0 && (
+                <div className="media-preview">
+                    {commentMediaFiles.map((file, index) => (
+                        <div key={index} className="media-item">
+                            <span>{file.name} ({mediaService.getMediaType(file)})</span>
+                            <button type="button" onClick={() => removeCommentFile(index)}className="remove-file-btn">✕</button>
+                        </div>
+                    ))}
+                </div>
+            )}
+        </div>
+    )
+    const renderReplyMediaSection = (commentId, parentId = null) => {
+        const key = parentId ? `${parentId}-${commentId}` : commentId
+        const files = replyMediaFiles[key] || []
+        if (files.length === 0) return null
+        return (
+            <div className="media-preview">
+                {files.map((file, index) => (
+                    <div key={index} className="media-item">
+                        <span>{file.name} ({mediaService.getMediaType(file)})</span>
+                        <button type="button" onClick={() => removeReplyFile(index, commentId, parentId)}className="remove-file-btn">✕</button>
+                    </div>
+                ))}
             </div>
         )
     }
@@ -269,18 +388,30 @@ const PostPage = () => {
                             <h3>Comentarios ({comments.length})</h3>
                             <input type="text" placeholder="Buscar por usuario..." value={searchTerm} onChange={e => setSearchTerm(e.target.value)} className="search-input" />
                             {user && !user.isGuest && (
-                                <button className="btn-new-comment" onClick={() => setIsFormOpen(!isFormOpen)}>{isFormOpen ? 'Cancelar' : 'Nuevo Comentario'}</button>
+                                <button className="btn-new-comment" onClick={() => setIsFormOpen(!isFormOpen)} >
+                                    {isFormOpen ? 'Cancelar' : 'Nuevo Comentario'}
+                                </button>
                             )}
                         </div>
+                        
                         {isFormOpen && (
                             <form className="comment-form" onSubmit={handleSubmitComment}>
+                                {commentErrorMsg && <p className="error-message">{commentErrorMsg}</p>}
                                 <textarea value={commentContent} onChange={e => setCommentContent(e.target.value)} placeholder="Escribe tu comentario..." className="comment-textarea" rows="4" />
+                                {renderCommentMediaSection()}
                                 <button type="submit" disabled={!commentContent.trim()} className="btn-submit">Publicar Comentario</button>
                             </form>
                         )}
+                        
+                        {replyErrorMsg && (
+                            <div className="error-message">{replyErrorMsg}</div>
+                        )}
+                        
                         <div className="comments-list">
                             {filteredComments.length === 0 ? (
-                                <div className="no-comments">{searchTerm ? 'No se encontraron comentarios con ese usuario' : 'Sé el primero en comentar'}</div>
+                                <div className="no-comments">
+                                    {searchTerm ? 'No se encontraron comentarios con ese usuario' : 'Sé el primero en comentar'}
+                                </div>
                             ) : (
                                 filteredComments.map(comment => (
                                     <CommentSection
@@ -297,6 +428,8 @@ const PostPage = () => {
                                         onReplyContentChange={handleReplyContentChange}
                                         onReply={handleReply}
                                         onToggleReplies={toggleReplies}
+                                        renderReplyMediaSection={renderReplyMediaSection}
+                                        handleReplyFileSelect={handleReplyFileSelect}
                                     />
                                 ))
                             )}
