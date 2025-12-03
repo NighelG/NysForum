@@ -1,0 +1,38 @@
+
+.icono-negro {
+    filter: brightness(0) saturate(100%);
+    width: 20px;
+    height: 20px;
+    transition: filter 0.2s ease;
+}
+
+.icono-blanco {
+    filter: brightness(0) invert(1);
+    width: 20px;
+    height: 20px;
+}
+
+.icono-accent {
+    filter: invert(28%) sepia(90%) saturate(500%) hue-rotate(215deg);
+    width: 20px;
+    height: 20px;
+}
+
+.icono-negro:hover {
+    filter: brightness(0) saturate(100%) opacity(0.7);
+}
+
+.icono-sm {
+    width: 16px;
+    height: 16px;
+}
+
+.icono-md {
+    width: 24px;
+    height: 24px;
+}
+
+.icono-lg {
+    width: 32px;
+    height: 32px;
+}

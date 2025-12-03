@@ -5,6 +5,7 @@ import Forum from '../pages/Forum.jsx'
 import UserSettingsPage from '../pages/UserSettingsPage.jsx'
 import PostPage from '../pages/PostPage.jsx'
 
+
 const ProtectedRoute = ({ children }) => {
   const { isAuthenticated, loading, user } = useAuth()
   

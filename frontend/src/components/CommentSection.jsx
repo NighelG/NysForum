@@ -4,19 +4,19 @@ import { useavatar } from '../hooks/useavatar'
 import mediaService from '../services/mediaSerivce.js'
 
 const CommentSection = ({ 
-    comment, 
-    onLike, 
-    onDislike, 
-    currentUser, 
-    replyingTo, 
-    replyContents,
-    expandedReplies,
-    onStartReply, 
-    onCancelReply, 
-    onReplyContentChange, 
-    onReply, 
-    onToggleReplies 
-}) => {
+        comment, 
+        onLike, 
+        onDislike, 
+        currentUser, 
+        replyingTo, 
+        replyContents,
+        expandedReplies,
+        onStartReply, 
+        onCancelReply, 
+        onReplyContentChange, 
+        onReply, 
+        onToggleReplies 
+    }) => {
     const isReplying = replyingTo === comment.id
     const replyContent = replyContents[comment.id] || ''
     const replies = comment.replies || []

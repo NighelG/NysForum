@@ -1,5 +1,5 @@
 import React from 'react'
-import mediaService from '../services/mediaSerivce.js' // Importar mediaService
+import mediaService from '../services/mediaSerivce.js'
 
 const ReplyComment = ({ 
     reply, 

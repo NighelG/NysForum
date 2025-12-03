@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { authService } from '../services/authService.js'
-import '../styles/CreatePostDrawer.css'
+import '../styles/RegisterComponent.css'
 
 function RegisterComponent({ onClose }) {
     const [formData, setFormData] = useState({
@@ -15,6 +15,7 @@ function RegisterComponent({ onClose }) {
     const [isLoading, setIsLoading] = useState(false)
     const [showPassword, setShowPassword] = useState(false)
     const [showPasswordConfirm, setShowPasswordConfirm] = useState(false)
+    
     useEffect(() => {
         document.body.classList.add('modal-open')
         
@@ -22,18 +23,22 @@ function RegisterComponent({ onClose }) {
             document.body.classList.remove('modal-open')
         }
     }, [])
+    
     const handleInputChange = (field, value) => {
         setFormData(prev => ({
             ...prev,
             [field]: value
         }))
     }
+    
     function validarCorreo(correo) {
         const dirrecPopular = /^[a-zA-Z0-9._%+-]+@(gmail\.com|googlemail\.com|hotmail\.com|outlook\.com|live\.com|yahoo\.com|yahoo\.es)$/i
         return dirrecPopular.test(correo)
     }
+    
     const validarUsuario = () => formData.username.length >= 3
     const validarPassword = () => formData.password.length >= 8
+    
     const handleRegistro = async () => {
         setErrorMsg('')
         if (!formData.username || !formData.email || !formData.password || !formData.password_confirm) {
@@ -56,6 +61,7 @@ function RegisterComponent({ onClose }) {
             setErrorMsg("Por favor ingresa un correo válido de dominio popular (Gmail, Hotmail, Yahoo, etc.)")
             return
         }
+        
         setIsLoading(true)
         try {
             console.log('Iniciando proceso de registro...')
@@ -90,64 +96,42 @@ function RegisterComponent({ onClose }) {
 
     return (
         <>
-            <div className="modal-backdrop" onClick={onClose}></div>
-            <div className="modal-container"onClick={(e) => e.stopPropagation()}>
-                <div className="d-flex justify-content-between align-items-center mb-4">
-                    <h3 className="mb-0" style={{ color: 'var(--text-dark)' }}> Crear Cuenta</h3>
-                    <button onClick={onClose}className="btn-close"style={{ fontSize: '1.2rem' }}></button>
+            <div className="register-modal-backdrop" onClick={onClose}></div>
+            <div className="register-modal-container" onClick={(e) => e.stopPropagation()}>
+                <div className="register-modal-header">
+                    <h3 className="register-modal-title">Crear Cuenta</h3>
+                    <button onClick={onClose} className="register-modal-close" aria-label="Cerrar"> X</button>
                 </div>
                 {errorMsg && (
-                    <div className={`alert ${errorMsg.includes('success:') ? 'alert-success-custom' : 'alert-danger-custom'} mb-3`}role="alert">
+                    <div className={errorMsg.includes('success:') ? 'register-success' : 'register-error'}>
                         {errorMsg.replace('success: ', '')}
                     </div>
                 )}
-                <div className="row">
-                    <div className="col-md-6 mb-3">
-                        <input type="text" className="form-control form-control-custom" placeholder="Nombre (opcional)" value={formData.first_name} 
-                            onChange={(e) => handleInputChange('first_name', e.target.value)} disabled={isLoading}/>
+                <div className="register-form-grid">
+                    <input type="text" className="register-input" placeholder="Nombre (opcional)" value={formData.first_name} 
+                        onChange={(e) => handleInputChange('first_name', e.target.value)} disabled={isLoading}/>
+                    <input type="text" className="register-input" placeholder="Apellido (opcional)" value={formData.last_name} 
+                        onChange={(e) => handleInputChange('last_name', e.target.value)} disabled={isLoading}/>
+                    <input type="text" className="register-input register-input-full" placeholder="Nombre de Usuario *"minLength="3" maxLength="20" value={formData.username}
+                        onChange={(e) => handleInputChange('username', e.target.value)} disabled={isLoading} required/>
+                    <input type="email" className="register-input register-input-full" placeholder="Correo Electrónico *"
+                        value={formData.email} onChange={(e) => handleInputChange('email', e.target.value)}disabled={isLoading}required/>
+                    <div className="register-password-container">
+                        <input type={showPassword ? "text" : "password"}  className="register-password-input" placeholder="Contraseña *" minLength="8"maxLength="15"
+                            value={formData.password}onChange={(e) => handleInputChange('password', e.target.value)} disabled={isLoading} required/>
+                        <button type="button" className="register-toggle-password" onClick={() => setShowPassword(!showPassword)} disabled={isLoading}> {showPassword ? "Ocultar" : "Mostrar"} </button>
                     </div>
-                    <div className="col-md-6 mb-3">
-                        <input type="text"  className="form-control form-control-custom" placeholder="Apellido (opcional)"value={formData.last_name}  
-                            onChange={(e) => handleInputChange('last_name', e.target.value)} disabled={isLoading} />
-                    </div>
-                </div>
-                <div className="mb-3">
-                    <input type="text" className="form-control form-control-custom" placeholder="Nombre de Usuario *" minLength="3" maxLength="20"
-                        value={formData.username}  onChange={(e) => handleInputChange('username', e.target.value)}disabled={isLoading} required/>
-                </div>
-                <div className="mb-3">
-                    <input type="email" className="form-control form-control-custom" placeholder="Correo Electrónico *" value={formData.email} 
-                        onChange={(e) => handleInputChange('email', e.target.value)} disabled={isLoading} required />
-                </div>
-                <div className="row">
-                    <div className="col-md-6 mb-3">
-                        <div className="position-relative">
-                            <input type={showPassword ? "text" : "password"} className="form-control form-control-custom"placeholder="Contraseña *"minLength="8"
-                                maxLength="15"value={formData.password} onChange={(e) => handleInputChange('password', e.target.value)} disabled={isLoading} required/>
-                            <button type="button"className="btn btn-sm position-absolute end-0 top-50 translate-middle-y me-2"
-                                style={{ background: 'none', border: 'none' }}onClick={() => setShowPassword(!showPassword)}>
-                                {showPassword ? <img className='icono-negro' src="/pwoff.png" alt="" /> : <img className='icono-negro' src="/pwon.png" alt="" />}
-                            </button>
-                        </div>
-                    </div>
-                    <div className="col-md-6 mb-3">
-                        <div className="position-relative">
-                            <input type={showPasswordConfirm ? "text" : "password"}  className="form-control form-control-custom" placeholder="Confirmar Contraseña *" 
-                                value={formData.password_confirm} onChange={(e) => handleInputChange('password_confirm', e.target.value)} disabled={isLoading}required/>
-                            <button type="button"className="btn btn-sm position-absolute end-0 top-50 translate-middle-y me-2"
-                                style={{ background: 'none', border: 'none' }}onClick={() => setShowPasswordConfirm(!showPasswordConfirm)}>
-                                {showPassword ? <img className='icono-negro' src="/pwoff.png" alt="" /> : <img className='icono-negro' src="/pwon.png" alt="" />}
-                            </button>
-                        </div>
+                    <div className="register-password-container">
+                        <input type={showPasswordConfirm ? "text" : "password"} className="register-password-input" placeholder="Confirmar Contraseña *" value={formData.password_confirm}
+                            onChange={(e) => handleInputChange('password_confirm', e.target.value)} disabled={isLoading} required/>
+                        <button type="button" className="register-toggle-password" onClick={() => setShowPasswordConfirm(!showPasswordConfirm)} disabled={isLoading}>
+                            {showPasswordConfirm ? "Ocultar" : "Mostrar"}
+                        </button>
                     </div>
                 </div>
-                <button className="btn btn-primary-custom w-100 mb-3"onClick={handleRegistro}disabled={isLoading}>
-                    {isLoading ? 'Registrando...' : 'Crear Cuenta'}
-                </button>
-                <div className="text-center">
-                    <small className="text-muted">
-                        Al registrarte, aceptas nuestros términos y condiciones
-                    </small>
+                <button className="register-submit-btn" onClick={handleRegistro} disabled={isLoading}>{isLoading ? 'Registrando...' : 'Crear Cuenta'}</button>
+                <div className="register-terms">
+                    <small>Al registrarte, aceptas nuestros términos y condiciones</small>
                 </div>
             </div>
         </>

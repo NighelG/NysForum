@@ -2,6 +2,7 @@ import React, { useState } from 'react'
 import { useAuth } from '../context/AuthContext.jsx'
 import { useNavigate } from 'react-router-dom'
 import RegisterComponent from '../components/RegisterComponent.jsx'
+import '../styles/LoginPage.css'
 
 function LoginPage() {
     const [user, setUser] = useState('')
@@ -49,51 +50,40 @@ function LoginPage() {
     }
 
     return (
-        <div className="min-vh-100 d-flex align-items-center justify-content-center p-3">
-            <div className="position-absolute top-0 start-0 w-100 h-100" 
-                    style={{
-                        background: 'linear-gradient(135deg, var(--light-green) 0%, var(--olivine) 100%)'
-                    }}>
-            </div>
-            <div className="card shadow-lg border-0 position-relative" 
-                    style={{
-                        backgroundColor: 'var(--lavender)',
-                        border: '3px solid var(--asparagus)',
-                        borderRadius: '20px',
-                        maxWidth: '400px',
-                        width: '100%'
-                    }}>
-                <div className="card-body p-4 text-center">
-                    <div className="mb-4">
-                        <img src="/nys-nice-forum-logo.png" alt="NysForum Logo" className="logo-login"/>
+        <div className="login-container">
+            <div className="login-background"></div>
+            <div className="login-card">
+                <div className="login-card-body">
+                    <div className="login-logo-container">
+                        <img src="/nys-nice-forum-logo.png"  alt="Foro Logo" className="login-logo"/>
                     </div>
+                    <h2 className="login-title">Acceso al Foro</h2>
+                    <p className="login-subtitle">Únete a la discusión</p>
                     {errorMsg && (
-                        <div className="alert alert-danger mb-3" role="alert">
+                        <div className="login-error" role="alert">
                             {errorMsg}
                         </div>
                     )}
-                    <div className="mb-3">
-                        <input type="text" className="form-control form-control-custom mb-3" placeholder="Usuario"value={user} onChange={(e) => setUser(e.target.value)} />
-                        <div className="position-relative">
-                            <input type={showPassword ? "text" : "password"} className="form-control form-control-custom" 
-                            placeholder="Contraseña" value={password} onChange={(e) => setPassword(e.target.value)}/>
-                            <button type="button" className="btn btn-sm position-absolute end-0 top-50 translate-middle-y me-2"
-                                style={{ background: 'none', border: 'none' }}onClick={() => setShowPassword(!showPassword)}>
-                                {showPassword ? <img className='icono-negro' src="/pwoff.png" alt="" /> : <img className='icono-negro' src="/pwon.png" alt="" />}
-                            </button>
+                    <div className="login-form">
+                        <input type="text" className="login-input" placeholder="Nombre de usuario" value={user} onChange={(e) => setUser(e.target.value)}/>
+                        <div className="login-input-password-container">
+                            <input type={showPassword ? "text" : "password"} className="login-input-password" placeholder="Contraseña" value={password} onChange={(e) => setPassword(e.target.value)}/>
+                            <button type="button" className="login-toggle-password" onClick={() => setShowPassword(!showPassword)}>{showPassword ? "Ocultar" : "Mostrar"}</button>
                         </div>
                     </div>
-                    <div className="d-grid gap-2 mb-3">
-                        <button className="btn btn-primary-custom" onClick={handleLogin}> Iniciar Sesión </button>
-                        <button className="btn btn-primary-custom" onClick={() => {
-                            loginAsGuest() 
-                            navigate('/forum')}}>
+                    <div className="login-buttons">
+                        <button className="login-btn-primary" onClick={handleLogin}>Iniciar Sesión</button>
+                        <button className="login-btn-secondary"
+                            onClick={() => {
+                                loginAsGuest();
+                                navigate('/forum');
+                            }}>
                             Entrar como invitado
                         </button>
                     </div>
-                    <div className="text-center">
-                        <p className="mb-2" style={{ color: 'var(--dark-green)' }}>¿No tienes una cuenta?</p>
-                        <button className="btn btn-link p-0 fw-bold"style={{ color: 'var(--asparagus)', textDecoration: 'none' }}onClick={() => setShowRegister(true)}>Regístrate aquí</button>
+                    <div className="login-register-container">
+                        <p className="login-register-text">¿No tienes una cuenta?</p>
+                        <button className="login-register-link" onClick={() => setShowRegister(true)}> Regístrate aquí</button>
                     </div>
                 </div>
             </div>

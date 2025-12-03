@@ -72,5 +72,5 @@ export const postService = {
         return await apiRequest(`/api/posts/${postId}/increment-view/`, {
             method: 'POST'
         });
-    },
+    }
 };
