@@ -2,6 +2,7 @@ import React from 'react'
 import ReplyComment from './ReplyComment'
 import { useavatar } from '../hooks/useavatar'
 import mediaService from '../services/mediaSerivce.js'
+import ReportButton from '../components/ReportButton' // <-- AGREGADO
 
 const CommentSection = ({ 
         comment, 
@@ -87,6 +88,18 @@ const CommentSection = ({
                     {comment.dislikes_count}
                 </button>
                 <button className="reply-btn" onClick={() => onStartReply(comment.id)} disabled={!currentUser || currentUser.isGuest}>Responder</button>
+
+                {comment.profile && (
+                    <ReportButton 
+                        contentType="comment"
+                        contentId={comment.id}
+                        contentAuthorId={comment.profile.id}
+                        onReportSubmitted={() => {
+                            console.log('Comentario reportado:', comment.id);
+                        }}
+                    />
+                )}
+
             </div>
             {isReplying && (
                 <div className="reply-form">
@@ -97,6 +110,7 @@ const CommentSection = ({
                     </div>
                 </div>
             )}
+
             {replies.length > 0 && (
                 <div className="replies-container">
                 {displayedReplies.map(reply => (
@@ -123,6 +137,7 @@ const CommentSection = ({
                 )}
                 </div>
             )}
+            
         </div>
     )
 }

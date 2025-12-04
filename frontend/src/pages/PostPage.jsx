@@ -6,7 +6,8 @@ import { postService } from '../services/postService'
 import { commentService } from '../services/commentService'
 import mediaService from '../services/mediaSerivce.js'
 import Sidebar from '../components/SideBar.jsx'
-import CommentSection from '../components/CommentSection'
+import CommentSection from '../components/CommentSection.jsx'
+import ReportButton from '../components/ReportButton.jsx' // <-- NUEVA IMPORTACIÓN
 import '../styles/PostPage.css'
 
 const PostPage = () => {
@@ -330,6 +331,18 @@ const PostPage = () => {
                                 <img src="/views.png" className="icono-negro" /> Vistas: {post.views_count || 0}
                             </span>
                         </div>
+
+                        {post && post.profile && (
+                            <div className="post-report-section">
+                                <ReportButton 
+                                    contentType="post"
+                                    contentId={post.id}
+                                    contentAuthorId={post.profile.id}
+                                    onReportSubmitted={() => {
+                                    }}
+                                />
+                            </div>
+                        )}
                     </div>
                     <div className="comments-section">
                         <div className="comments-header">
@@ -371,9 +384,23 @@ const PostPage = () => {
                                 </div>
                             ) : (
                                 filteredComments.map(comment => (
-                                    <CommentSection key={comment.id} comment={comment} onLike={handleLike} onDislike={handleDislike} currentUser={user} replyingTo={replyingTo} replyContents={replyContents}
-                                        expandedReplies={expandedReplies} onStartReply={handleStartReply} onCancelReply={() => setReplyingTo(null)} onReplyContentChange={handleReplyContentChange}
-                                        onReply={handleReply} onToggleReplies={toggleReplies} renderReplyMediaSection={renderReplyMediaSection} handleReplyFileSelect={handleReplyFileSelect} />
+                                    <CommentSection 
+                                        key={comment.id} 
+                                        comment={comment} 
+                                        onLike={handleLike} 
+                                        onDislike={handleDislike} 
+                                        currentUser={user} 
+                                        replyingTo={replyingTo} 
+                                        replyContents={replyContents}
+                                        expandedReplies={expandedReplies} 
+                                        onStartReply={handleStartReply} 
+                                        onCancelReply={() => setReplyingTo(null)} 
+                                        onReplyContentChange={handleReplyContentChange}
+                                        onReply={handleReply} 
+                                        onToggleReplies={toggleReplies} 
+                                        renderReplyMediaSection={renderReplyMediaSection} 
+                                        handleReplyFileSelect={handleReplyFileSelect} 
+                                    />
                                 ))
                             )}
                         </div>

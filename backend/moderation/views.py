@@ -1,13 +1,19 @@
 from django.db import IntegrityError, transaction
+from django.utils import timezone
+from django.db.models import Q, Count
 from rest_framework import generics, permissions, status
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from django.db.models import Q
+from rest_framework.decorators import action
+
+from posts.models import Post
+from comments.models import Comment
 from .models import (
     ReactionPost, ReactionComment, Notification,
     ReportPost, ReportComment,
     ModerationActionPost, ModerationActionComment
 )
+
 from .serializers import (
     ReactionPostSerializer, ReactionCommentSerializer, NotificationSerializer,
     ReportPostSerializer, ReportCommentSerializer,
@@ -29,6 +35,36 @@ class IsAdminOrTrueAdmin(permissions.BasePermission):
         if hasattr(request.user, 'profile'):
             return request.user.profile.role in ['admin', 'true_admin']
         return False
+    
+class ReportPostCreateView(generics.CreateAPIView):
+    queryset = ReportPost.objects.all()
+    serializer_class = ReportPostSerializer
+    permission_classes = [permissions.IsAuthenticated]
+    def perform_create(self, serializer):
+        report = serializer.save(reporter=self.request.user.profile)
+        try:
+            if report.post.profile != self.request.user.profile:
+                Notification.objects.create(
+                    recipient=report.post.profile,
+                    message=f'Tu post "{report.post.title[:50]}..." ha sido reportado. Razón: {report.get_category_display()}'
+                )
+        except:
+            pass
+
+class ReportCommentCreateView(generics.CreateAPIView):
+    queryset = ReportComment.objects.all()
+    serializer_class = ReportCommentSerializer
+    permission_classes = [permissions.IsAuthenticated]
+    def perform_create(self, serializer):
+        report = serializer.save(reporter=self.request.user.profile)
+        try:
+            if report.comment.profile != self.request.user.profile:
+                Notification.objects.create(
+                    recipient=report.comment.profile,
+                    message=f'Tu comentario en el post "{report.comment.post.title[:50]}..." ha sido reportado. Razón: {report.get_category_display()}'
+                )
+        except:
+            pass
 
 class ReactionPostListCreateView(generics.ListCreateAPIView):
     serializer_class = ReactionPostSerializer
@@ -164,29 +200,77 @@ class NotificationMarkAsReadView(APIView):
                 is_read=False
             ).update(is_read=True)
             return Response({'message': 'Todas las notificaciones marcadas como leídas'})
-
-class ReportPostCreateView(generics.CreateAPIView):
-    queryset = ReportPost.objects.all()
-    serializer_class = ReportPostSerializer
-    permission_classes = [permissions.IsAuthenticated]
-    def perform_create(self, serializer):
-        serializer.save(reporter=self.request.user.profile)
-
-class ReportCommentCreateView(generics.CreateAPIView):
-    queryset = ReportComment.objects.all()
-    serializer_class = ReportCommentSerializer
-    permission_classes = [permissions.IsAuthenticated]
-    def perform_create(self, serializer):
-        serializer.save(reporter=self.request.user.profile)
-
+        
 class ModerationActionPostListCreateView(generics.ListCreateAPIView):
     serializer_class = ModerationActionPostSerializer
     permission_classes = [IsModeratorOrAdmin]
     def get_queryset(self):
-        return ModerationActionPost.objects.select_related(
+        queryset = ModerationActionPost.objects.select_related(
             'moderator__user', 'target_post__profile__user'
-        )
+        ).order_by('-created_at')
+        action = self.request.query_params.get('action')
+        moderator_id = self.request.query_params.get('moderator_id')
+        if action:
+            queryset = queryset.filter(action=action)
+        if moderator_id:
+            queryset = queryset.filter(moderator_id=moderator_id)
+        return queryset
     def perform_create(self, serializer):
+        action = serializer.validated_data.get('action')
+        target_post = serializer.validated_data.get('target_post')
+        if action == 'delete' and target_post:
+            if hasattr(target_post, 'media_files'):
+                for media in target_post.media_files.all():
+                    try:
+                        from users.services.mongo_service import mongo_service
+                        mongo_service.delete_file(media.file_id)
+                    except:
+                        pass
+            ReportPost.objects.filter(
+                post=target_post, 
+                status='pending'
+            ).update(
+                status='resolved',
+                resolved_by=self.request.user.profile,
+                resolved_at=timezone.now(),
+                admin_notes=f'Post eliminado por acción de moderación'
+            )
+        serializer.save(moderator=self.request.user.profile)
+
+class ModerationActionCommentListCreateView(generics.ListCreateAPIView):
+    serializer_class = ModerationActionCommentSerializer
+    permission_classes = [IsModeratorOrAdmin]
+    def get_queryset(self):
+        queryset = ModerationActionComment.objects.select_related(
+            'moderator__user', 'target_comment__profile__user'
+        ).order_by('-created_at')
+        action = self.request.query_params.get('action')
+        moderator_id = self.request.query_params.get('moderator_id')
+        if action:
+            queryset = queryset.filter(action=action)
+        if moderator_id:
+            queryset = queryset.filter(moderator_id=moderator_id)
+        return queryset
+    def perform_create(self, serializer):
+        action = serializer.validated_data.get('action')
+        target_comment = serializer.validated_data.get('target_comment')
+        if action == 'delete' and target_comment:
+            if hasattr(target_comment, 'media_files'):
+                for media in target_comment.media_files.all():
+                    try:
+                        from users.services.mongo_service import mongo_service
+                        mongo_service.delete_file(media.file_id)
+                    except:
+                        pass
+            ReportComment.objects.filter(
+                comment=target_comment, 
+                status='pending'
+            ).update(
+                status='resolved',
+                resolved_by=self.request.user.profile,
+                resolved_at=timezone.now(),
+                admin_notes=f'Comentario eliminado por acción de moderación'
+            )
         serializer.save(moderator=self.request.user.profile)
 
 class ModerationActionPostDetailView(generics.RetrieveUpdateDestroyAPIView):
@@ -196,19 +280,225 @@ class ModerationActionPostDetailView(generics.RetrieveUpdateDestroyAPIView):
     serializer_class = ModerationActionPostSerializer
     permission_classes = [IsModeratorOrAdmin]
 
-class ModerationActionCommentListCreateView(generics.ListCreateAPIView):
-    serializer_class = ModerationActionCommentSerializer
-    permission_classes = [IsModeratorOrAdmin]
-    def get_queryset(self):
-        return ModerationActionComment.objects.select_related(
-            'moderator__user', 'target_comment__profile__user'
-        )
-    def perform_create(self, serializer):
-        serializer.save(moderator=self.request.user.profile)
-
 class ModerationActionCommentDetailView(generics.RetrieveUpdateDestroyAPIView):
     queryset = ModerationActionComment.objects.select_related(
         'moderator__user', 'target_comment__profile__user'
     )
     serializer_class = ModerationActionCommentSerializer
     permission_classes = [IsModeratorOrAdmin]
+    
+class UnifiedReportsListView(generics.ListAPIView):
+    permission_classes = [IsAdminOrTrueAdmin]
+    def get(self, request, *args, **kwargs):
+        status_param = request.query_params.get('status', 'pending')
+        content_type = request.query_params.get('type')
+        category = request.query_params.get('category')
+        post_reports = ReportPost.objects.select_related(
+            'reporter__user', 
+            'post__profile__user',
+            'resolved_by__user'
+        ).all()
+        comment_reports = ReportComment.objects.select_related(
+            'reporter__user', 
+            'comment__profile__user',
+            'comment__post',
+            'resolved_by__user'
+        ).all()
+        if status_param:
+            post_reports = post_reports.filter(status=status_param)
+            comment_reports = comment_reports.filter(status=status_param)
+        if category:
+            post_reports = post_reports.filter(category=category)
+            comment_reports = comment_reports.filter(category=category)
+        post_reports = post_reports.order_by('-created_at')
+        comment_reports = comment_reports.order_by('-created_at')
+        if content_type == 'post':
+            post_reports = post_reports[:100]
+            comment_reports = comment_reports.none()
+        elif content_type == 'comment':
+            comment_reports = comment_reports[:100]
+            post_reports = post_reports.none()
+        else:
+            post_reports = post_reports[:50]
+            comment_reports = comment_reports[:50]
+        post_serializer = ReportPostSerializer(post_reports, many=True)
+        comment_serializer = ReportCommentSerializer(comment_reports, many=True)
+        return Response({
+            'post_reports': post_serializer.data,
+            'comment_reports': comment_serializer.data,
+            'total_post_reports': len(post_serializer.data),
+            'total_comment_reports': len(comment_serializer.data),
+            'total': len(post_serializer.data) + len(comment_serializer.data),
+            'filters': {
+                'status': status_param,
+                'type': content_type,
+                'category': category
+            }
+        }, status=status.HTTP_200_OK)
+
+class ResolveReportView(APIView):
+    permission_classes = [IsAdminOrTrueAdmin]
+    def post(self, request, report_type, report_id):
+        try:
+            if report_type == 'post':
+                report = ReportPost.objects.get(id=report_id)
+                content = report.post
+                content_model = Post
+                content_type_str = 'post'
+            elif report_type == 'comment':
+                report = ReportComment.objects.get(id=report_id)
+                content = report.comment
+                content_model = Comment
+                content_type_str = 'comment'
+            else:
+                return Response(
+                    {'error': 'Tipo de reporte inválido. Use "post" o "comment"'},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+            new_status = request.data.get('status', 'resolved')
+            action_taken = request.data.get('action', 'none')
+            admin_notes = request.data.get('notes', '')
+            valid_statuses = ['pending', 'reviewed', 'resolved', 'dismissed']
+            if new_status not in valid_statuses:
+                return Response(
+                    {'error': f'Estado inválido. Use: {", ".join(valid_statuses)}'},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+            with transaction.atomic():
+                report.status = new_status
+                report.resolved_by = request.user.profile
+                report.resolved_at = timezone.now() if new_status in ['resolved', 'dismissed'] else None
+                report.admin_notes = admin_notes
+                report.save()
+                action_message = 'ninguna acción adicional'
+                if action_taken == 'remove' and content:
+                    content_id = content.id
+                    content_author = content.profile.user.username
+                    if content_type_str == 'post':
+                        from posts.views import PostDetailView
+                        view = PostDetailView()
+                        view._delete_post_media(content)
+                    else:
+                        from comments.views import CommentDetailView
+                        view = CommentDetailView()
+                        view._delete_comment_media(content)
+                    content.delete()
+                    action_message = f'{content_type_str} eliminado'
+                    if content_type_str == 'post':
+                        ModerationActionPost.objects.create(
+                            moderator=request.user.profile,
+                            target_post_id=content_id,
+                            action='delete',
+                            reason=f"Reporte #{report_id} resuelto: {admin_notes}"
+                        )
+                    else:
+                        ModerationActionComment.objects.create(
+                            moderator=request.user.profile,
+                            target_comment_id=content_id,
+                            action='delete',
+                            reason=f"Reporte #{report_id} resuelto: {admin_notes}"
+                        )
+                    try:
+                        Notification.objects.create(
+                            recipient=report.post.profile if content_type_str == 'post' else report.comment.profile,
+                            message=f'Tu {content_type_str} ha sido eliminado por un moderador. Razón: {admin_notes[:100]}...'
+                        )
+                    except:
+                        pass
+                elif action_taken == 'warn' and content:
+                    if content_type_str == 'post':
+                        ModerationActionPost.objects.create(
+                            moderator=request.user.profile,
+                            target_post=content,
+                            action='warn',
+                            reason=f"Reporte #{report_id}: {admin_notes}"
+                        )
+                    else:
+                        ModerationActionComment.objects.create(
+                            moderator=request.user.profile,
+                            target_comment=content,
+                            action='warn',
+                            reason=f"Reporte #{report_id}: {admin_notes}"
+                        )
+                    try:
+                        Notification.objects.create(
+                            recipient=content.profile,
+                            message=f'Has recibido una advertencia por tu {content_type_str}. Razón: {admin_notes[:100]}...'
+                        )
+                    except:
+                        pass
+                    
+                    action_message = 'usuario advertido'
+            return Response({
+                'message': f'Reporte {content_type_str} #{report_id} actualizado a "{new_status}"',
+                'status': new_status,
+                'action_taken': action_taken,
+                'action_message': action_message,
+                'resolved_by': request.user.profile.user.username,
+                'resolved_at': report.resolved_at
+            }, status=status.HTTP_200_OK)
+            
+        except (ReportPost.DoesNotExist, ReportComment.DoesNotExist):
+            return Response(
+                {'error': 'Reporte no encontrado'},
+                status=status.HTTP_404_NOT_FOUND
+            )
+        except Exception as e:
+            import traceback
+            print(f"Error en ResolveReportView: {str(e)}")
+            print(traceback.format_exc())
+            return Response(
+                {'error': f'Error interno: {str(e)}'},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
+class ReportStatsView(APIView):
+    permission_classes = [IsAdminOrTrueAdmin]
+    def get(self, request):
+        post_reports_by_status = list(ReportPost.objects.values('status').annotate(
+            count=Count('id')
+        ).order_by('status'))
+        comment_reports_by_status = list(ReportComment.objects.values('status').annotate(
+            count=Count('id')
+        ).order_by('status'))
+        post_reports_by_category = list(ReportPost.objects.values('category').annotate(
+            count=Count('id')
+        ).order_by('category'))
+        comment_reports_by_category = list(ReportComment.objects.values('category').annotate(
+            count=Count('id')
+        ).order_by('category'))
+        pending_post_reports = ReportPost.objects.filter(status='pending').count()
+        pending_comment_reports = ReportComment.objects.filter(status='pending').count()
+        recent_post_actions = list(ModerationActionPost.objects.select_related(
+            'moderator__user'
+        ).order_by('-created_at')[:5].values(
+            'action', 'reason', 'created_at', 'moderator__user__username'
+        ))
+        recent_comment_actions = list(ModerationActionComment.objects.select_related(
+            'moderator__user'
+        ).order_by('-created_at')[:5].values(
+            'action', 'reason', 'created_at', 'moderator__user__username'
+        ))
+        return Response({
+            'stats': {
+                'total_post_reports': ReportPost.objects.count(),
+                'total_comment_reports': ReportComment.objects.count(),
+                'total_reports': ReportPost.objects.count() + ReportComment.objects.count(),
+                'pending_post_reports': pending_post_reports,
+                'pending_comment_reports': pending_comment_reports,
+                'total_pending': pending_post_reports + pending_comment_reports,
+                'resolved_today': ReportPost.objects.filter(
+                    resolved_at__date=timezone.now().date()
+                ).count() + ReportComment.objects.filter(
+                    resolved_at__date=timezone.now().date()
+                ).count()
+            },
+            'post_reports_by_status': post_reports_by_status,
+            'comment_reports_by_status': comment_reports_by_status,
+            'post_reports_by_category': post_reports_by_category,
+            'comment_reports_by_category': comment_reports_by_category,
+            'recent_actions': {
+                'post_actions': recent_post_actions,
+                'comment_actions': recent_comment_actions
+            }
+        }, status=status.HTTP_200_OK)

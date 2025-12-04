@@ -114,10 +114,10 @@
 }
 
 .media-item {
-    border-radius: 8px;
     overflow: hidden;
-    max-width: 100%;
-    border: 1px solid var(--wisteria-blue);
+    min-width: 200px;
+    max-width: 800px;
+    object-fit: cover;
 }
 
 .post-media-image {
@@ -532,8 +532,8 @@
 
 .comment-media,
 .reply-media {
-    max-width: 200px;
-    max-height: 200px;
+    max-width: 800px;
+    min-width: 200px;
     border-radius: 8px;
     object-fit: cover;
     border: 1px solid var(--wisteria-blue);

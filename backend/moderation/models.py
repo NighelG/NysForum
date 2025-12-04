@@ -31,18 +31,86 @@ class Notification(models.Model):
 class ReportPost(models.Model):
     reporter = models.ForeignKey(Profile, on_delete=models.CASCADE, related_name='post_reports')
     post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name='reports')
+    STATUS_CHOICES = [
+        ('pending', 'Pendiente'),
+        ('reviewed', 'Revisado'),
+        ('resolved', 'Resuelto'),
+        ('dismissed', 'Desestimado')
+    ]
+    status = models.CharField(
+        max_length=20, 
+        choices=STATUS_CHOICES, 
+        default='pending'
+    )
+    CATEGORY_CHOICES = [
+        ('spam', 'Spam'),
+        ('harassment', 'Acoso'),
+        ('inappropriate', 'Contenido inapropiado'),
+        ('misinformation', 'Información falsa'),
+        ('other', 'Otro')
+    ]
+    category = models.CharField(
+        max_length=50, 
+        choices=CATEGORY_CHOICES, 
+        default='other'
+    )
     reason = models.TextField()
+    resolved_at = models.DateTimeField(null=True, blank=True)
+    resolved_by = models.ForeignKey(
+        Profile, 
+        on_delete=models.SET_NULL, 
+        null=True, 
+        blank=True,
+        related_name='resolved_post_reports'
+    )
+    admin_notes = models.TextField(blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     class Meta:
         unique_together = ['reporter', 'post']
+    def __str__(self):
+        return f"Reporte #{self.id} - Post {self.post.id} ({self.status})"
 
 class ReportComment(models.Model):
     reporter = models.ForeignKey(Profile, on_delete=models.CASCADE, related_name='comment_reports')
     comment = models.ForeignKey(Comment, on_delete=models.CASCADE, related_name='reports')
+    STATUS_CHOICES = [
+        ('pending', 'Pendiente'),
+        ('reviewed', 'Revisado'),
+        ('resolved', 'Resuelto'),
+        ('dismissed', 'Desestimado')
+    ]
+    status = models.CharField(
+        max_length=20, 
+        choices=STATUS_CHOICES, 
+        default='pending'
+    )
+    CATEGORY_CHOICES = [
+        ('spam', 'Spam'),
+        ('harassment', 'Acoso'),
+        ('inappropriate', 'Contenido inapropiado'),
+        ('misinformation', 'Información falsa'),
+        ('other', 'Otro')
+    ]
+    category = models.CharField(
+        max_length=50, 
+        choices=CATEGORY_CHOICES, 
+        default='other'
+    )
     reason = models.TextField()
-    created_at = models.DateTimeField(auto_now_add=True) 
+    resolved_at = models.DateTimeField(null=True, blank=True)
+    resolved_by = models.ForeignKey(
+        Profile, 
+        on_delete=models.SET_NULL, 
+        null=True, 
+        blank=True,
+        related_name='resolved_comment_reports'
+    )
+    admin_notes = models.TextField(blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
     class Meta:
         unique_together = ['reporter', 'comment']
+    def __str__(self):
+        return f"Reporte #{self.id} - Comment {self.comment.id} ({self.status})"
 
 class ModerationActionPost(models.Model):
     moderator = models.ForeignKey(Profile, on_delete=models.CASCADE, related_name='post_moderation_actions')

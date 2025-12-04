@@ -43,7 +43,6 @@ function LoginPage() {
             setUser('')
             setPassword('')
             navigate('/forum')
-            console.log("Bienvenido")
         } catch(error) {
             setErrorMsg(error.message || "Error al iniciar sesión")
         }

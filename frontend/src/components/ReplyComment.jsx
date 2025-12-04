@@ -1,5 +1,6 @@
 import React from 'react'
 import mediaService from '../services/mediaSerivce.js'
+import ReportButton from '../components/ReportButton'
 
 const ReplyComment = ({ 
     reply, 
@@ -84,14 +85,23 @@ const ReplyComment = ({
                     {reply.dislikes_count || 0}
                 </button>
                 <button className="reply-btn" onClick={() => onStartReply(reply.id, parentId)} disabled={!currentUser || currentUser.isGuest}>Responder</button>
+
+                {reply.profile && (
+                    <ReportButton 
+                        contentType="comment"
+                        contentId={reply.id}
+                        contentAuthorId={reply.profile.id}
+                        onReportSubmitted={() => {
+                            console.log('Respuesta reportada:', reply.id);
+                        }}
+                    />
+                )}
             </div>
             {isReplying && (
                 <div className="reply-form">
                     <textarea value={replyContent} onChange={(e) => onReplyContentChange(e.target.value, reply.id, parentId)}placeholder="Escribe tu respuesta..."className="reply-textarea"rows="3"/>
                     <div className="reply-form-actions">
-                        <button type="button" className="btn-cancel" onClick={onCancelReply}>
-                            Cancelar
-                        </button>
+                        <button type="button" className="btn-cancel" onClick={onCancelReply}>Cancelar</button>
                         <button type="button"onClick={() => onReply(reply.id, parentId)} disabled={!replyContent.trim()}className="btn-submit">Responder</button>
                     </div>
                 </div>
