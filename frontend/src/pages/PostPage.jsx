@@ -2,18 +2,20 @@ import React, { useState, useEffect, useCallback, useMemo } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useApi } from '../hooks/useApi'
 import { useAuth } from '../context/AuthContext'
+import { useToast } from '../context/ToastContext'
 import { postService } from '../services/postService'
 import { commentService } from '../services/commentService'
 import mediaService from '../services/mediaSerivce.js'
 import Sidebar from '../components/SideBar.jsx'
 import CommentSection from '../components/CommentSection.jsx'
-import ReportButton from '../components/ReportButton.jsx' // <-- NUEVA IMPORTACIÓN
+import ReportButton from '../components/ReportButton.jsx'
 import '../styles/PostPage.css'
 
 const PostPage = () => {
     const { id } = useParams()
     const navigate = useNavigate()
     const { user } = useAuth()
+    const { showToast } = useToast()
     const { execute, loading, error } = useApi()
     const [post, setPost] = useState(null)
     const [comments, setComments] = useState([])
@@ -34,8 +36,9 @@ const PostPage = () => {
             setPost(postData)
         } catch (err) {
             console.error('Error cargando post:', err)
+            showToast('No se pudo cargar la publicación', 'error')
         }
-    }, [id, execute])
+    }, [id, execute, showToast])
 
     const loadComments = useCallback(async () => {
         try {
@@ -64,9 +67,10 @@ const PostPage = () => {
             setComments(adapted)
         } catch (err) {
             console.error('Error cargando comentarios:', err)
+            showToast('No se pudieron cargar los comentarios', 'error')
             setComments([])
         }
-    }, [id, execute])
+    }, [id, execute, showToast])
 
     useEffect(() => {
         if (!id) return
@@ -81,6 +85,7 @@ const PostPage = () => {
             action.includes('post') ? loadPost() : loadComments()
         } catch (err) {
             console.error(`Error al reaccionar:`, err)
+            showToast('No se pudo registrar tu reacción', 'error')
         }
     }
 
@@ -103,15 +108,29 @@ const PostPage = () => {
     }
     const processFiles = (files, setError, callback) => {
         const validFiles = []
+        let hasError = false
+        
         for (const file of files) {
             const result = validateFile(file)
             if (!result.valid) {
                 setError(result.error)
+                showToast(result.error, 'warning')
+                hasError = true
                 continue
             }
             validFiles.push(file)
         }
-        callback(validFiles)
+        
+        if (validFiles.length > 0) {
+            callback(validFiles)
+            if (validFiles.length === 1) {
+                showToast('Archivo agregado correctamente', 'success')
+            } else {
+                showToast(`${validFiles.length} archivos agregados correctamente`, 'success')
+            }
+        } else if (!hasError && files.length > 0) {
+            showToast('No se pudieron agregar los archivos', 'warning')
+        }
     }
     const handleCommentFileSelect = e =>
         processFiles(
@@ -143,7 +162,10 @@ const PostPage = () => {
     }
     const handleSubmitComment = async e => {
         e.preventDefault()
-        if (!commentContent.trim()) return
+        if (!commentContent.trim()) {
+            showToast('Escribe algo antes de comentar', 'warning')
+            return
+        }
         try {
             await execute(() =>
                 commentService.createComment({
@@ -157,8 +179,10 @@ const PostPage = () => {
             )
             resetCommentForm()
             loadComments()
+            showToast('Comentario publicado exitosamente', 'success')
         } catch (err) {
             setCommentErrorMsg(err.message || 'Error al publicar comentario')
+            showToast('No se pudo publicar el comentario', 'error')
         }
     }
     const resetCommentForm = () => {
@@ -171,7 +195,10 @@ const PostPage = () => {
         const key = getReplyKey(commentId, parentId)
         const content = parentId ? replyContents[parentId]?.[commentId] : replyContents[commentId]
         const files = replyMediaFiles[key] || []
-        if (!content?.trim() && files.length === 0) return
+        if (!content?.trim() && files.length === 0) {
+            showToast('Agrega contenido o medios para responder', 'warning')
+            return
+        }
         try {
             await execute(() =>
                 commentService.createComment({
@@ -186,8 +213,10 @@ const PostPage = () => {
             )
             resetReplyForm(commentId, parentId)
             loadComments()
+            showToast('Respuesta publicada exitosamente', 'success')
         } catch (err) {
             setReplyErrorMsg(err.message || 'Error al publicar respuesta')
+            showToast('No se pudo publicar la respuesta', 'error')
         }
     }
     const resetReplyForm = (commentId, parentId = null) => {

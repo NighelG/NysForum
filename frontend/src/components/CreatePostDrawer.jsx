@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react'
+import { useToast } from '../context/ToastContext'
 import { useApi } from '../hooks/useApi'
 import { postService } from '../services/postService.js'
 import mediaService from '../services/mediaSerivce.js'
@@ -8,10 +9,11 @@ function CreatePostDrawer({ isOpen, setIsOpen, onPostCreated }) {
   const [title, setTitle] = useState('')
   const [content, setContent] = useState('')
   const [mediaFiles, setMediaFiles] = useState([])
-  const [errorMsg, setErrorMsg] = useState('')
   const [categories, setCategories] = useState([])
   const [selectedCategoryId, setSelectedCategoryId] = useState("")
   const { execute, loading } = useApi()
+  const { showToast } = useToast()
+  
   useEffect(() => {
     if (isOpen) {
       postService.getCategories()
@@ -22,42 +24,51 @@ function CreatePostDrawer({ isOpen, setIsOpen, onPostCreated }) {
   
   const handleFileSelect = (event) => {
     const files = Array.from(event.target.files)
-    const validFiles = files.filter(file => {
+    let hasValidFiles = false
+    
+    files.forEach(file => {
       const mediaType = mediaService.getMediaType(file)
       const sizeError = mediaService.getSizeErrorMessage(file)
+      
       if (!mediaService.validateFileType(file, mediaType)) {
-        setErrorMsg(`Tipo de archivo no soportado: ${file.name}`)
-        return false
+        showToast(`Tipo de archivo no soportado: ${file.name}`, 'warning')
+        return
       }
+      
       if (sizeError) {
-        setErrorMsg(sizeError)
-        return false
+        showToast(sizeError, 'warning')
+        return
       }
-      return true
+      
+      setMediaFiles(prev => [...prev, file])
+      hasValidFiles = true
     })
-    setMediaFiles(prev => [...prev, ...validFiles])
-    setErrorMsg('')
+    
+    if (hasValidFiles) {
+      showToast('Archivo(s) agregado(s) correctamente', 'success')
+    }
   }
   
   const removeFile = (index) => {
     setMediaFiles(prev => prev.filter((_, i) => i !== index))
+    showToast('Archivo eliminado', 'info')
   }
   
   const createPost = async () => {
     if (!title || !content) {
-      setErrorMsg("Llena todos los espacios")
+      showToast("Llena todos los espacios", 'warning')
       return
     }
     if (title.length < 5) {
-      setErrorMsg("El título debe tener al menos 5 caracteres")
+      showToast("El título debe tener al menos 5 caracteres", 'warning')
       return
     }
     if (content.length < 10) {
-      setErrorMsg("El contenido debe tener al menos 10 caracteres")
+      showToast("El contenido debe tener al menos 10 caracteres", 'warning')
       return
     }
     if (!selectedCategoryId) {
-      setErrorMsg("Selecciona una categoría")
+      showToast("Selecciona una categoría", 'warning')
       return
     }
     
@@ -73,18 +84,22 @@ function CreatePostDrawer({ isOpen, setIsOpen, onPostCreated }) {
       }
       
       await execute(() => postService.createPost(newPost))
+      
       setTitle('')
       setContent('')
       setMediaFiles([])
       setSelectedCategoryId("")
-      setErrorMsg('')
       setIsOpen(false)
       
       if (onPostCreated) {
         onPostCreated()
       }
+      
+      showToast('Discusión creada exitosamente', 'success')
+      
     } catch (error) {
-      setErrorMsg(error.message || 'Error al publicar')
+      console.error('Error al publicar:', error)
+      showToast(error.message || 'Error al crear la discusión', 'error')
     }
   }
 
@@ -99,9 +114,6 @@ function CreatePostDrawer({ isOpen, setIsOpen, onPostCreated }) {
           <button className="create-post-drawer-close" onClick={() => setIsOpen(false)} aria-label="Cerrar">X</button>
         </div>
         <div className="create-post-drawer-content">
-          {errorMsg && (
-            <p className="create-post-error">{errorMsg}</p>
-          )}
           <input type="text" placeholder="Título de la discusión *" className="create-post-input"  value={title} onChange={(e) => setTitle(e.target.value)}/>
           <textarea placeholder="Describe tu tema o pregunta *" className="create-post-textarea" value={content} onChange={(e) => setContent(e.target.value)}/>
           <select className="create-post-select" value={selectedCategoryId}  onChange={(e) => setSelectedCategoryId(e.target.value)}>

@@ -1,18 +1,19 @@
-import { BrowserRouter } from 'react-router-dom';
-import { AuthProvider } from './context/AuthContext.jsx';
-import Routing from './routes/Routing.jsx';
+import { BrowserRouter } from 'react-router-dom'
+import { AuthProvider } from './context/AuthContext.jsx'
+import Routing from './routes/Routing.jsx'
 import 'bootstrap/dist/css/bootstrap.min.css'
-import { Toaster } from "react-hot-toast"
+import { ToastProvider } from "./context/ToastContext"
 
 function App() {
   return (
     <AuthProvider>
       <BrowserRouter>
-        <Toaster position="top-right" />
-        <Routing />
+        <ToastProvider>
+          <Routing />
+        </ToastProvider>
       </BrowserRouter>
     </AuthProvider>
-  );
+  )
 }
 
-export default App;
+export default App

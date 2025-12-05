@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react'
+import { useToast } from '../context/ToastContext'
 import { authService } from '../services/authService.js'
 import '../styles/RegisterComponent.css'
 
@@ -15,6 +16,7 @@ function RegisterComponent({ onClose }) {
     const [isLoading, setIsLoading] = useState(false)
     const [showPassword, setShowPassword] = useState(false)
     const [showPasswordConfirm, setShowPasswordConfirm] = useState(false)
+    const { showToast } = useToast()
     
     useEffect(() => {
         document.body.classList.add('modal-open')
@@ -43,22 +45,27 @@ function RegisterComponent({ onClose }) {
         setErrorMsg('')
         if (!formData.username || !formData.email || !formData.password || !formData.password_confirm) {
             setErrorMsg("Por favor, llena todos los espacios obligatorios")
+            showToast("Por favor, llena todos los espacios obligatorios", "warning")
             return
         }
         if (formData.password !== formData.password_confirm) {
             setErrorMsg("Las contraseñas no son iguales")
+            showToast("Las contraseñas no coinciden", "warning")
             return
         }
         if (!validarUsuario()) {
             setErrorMsg("El nombre de usuario debe tener al menos 3 caracteres")
+            showToast("Nombre de usuario debe tener al menos 3 caracteres", "warning")
             return
         }
         if (!validarPassword()) {
             setErrorMsg("La contraseña debe tener al menos 8 caracteres")
+            showToast("La contraseña debe tener al menos 8 caracteres", "warning")
             return
         }
         if (!validarCorreo(formData.email)) {
             setErrorMsg("Por favor ingresa un correo válido de dominio popular (Gmail, Hotmail, Yahoo, etc.)")
+            showToast("Correo electrónico no válido", "warning")
             return
         }
         
@@ -74,12 +81,14 @@ function RegisterComponent({ onClose }) {
                 last_name: formData.last_name
             })
             console.log('Registro exitoso:', result)
+            showToast('¡Registro exitoso! Ahora puedes iniciar sesión.', 'success')
             setErrorMsg('success: ¡Registro exitoso! Ahora puedes iniciar sesión.')
             setTimeout(() => {
                 onClose()
             }, 2000)
         } catch (error) {
             console.error('Error en registro:', error)
+            showToast('Error en el registro. Verifica tus datos.', 'error')
             if (error.message.includes('username')) {
                 setErrorMsg('El nombre de usuario ya existe o no es válido')
             } else if (error.message.includes('email')) {

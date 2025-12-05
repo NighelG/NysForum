@@ -1,15 +1,16 @@
 import React, { useState } from 'react'
 import { useAuth } from '../context/AuthContext'
+import { useToast } from '../context/ToastContext'
 import { apiRequest } from '../services/apiConfig'
 import '../styles/ReportButton.css'
 
 const ReportButton = ({ contentType, contentId, contentAuthorId, onReportSubmitted }) => {
     const { user } = useAuth()
+    const { showToast } = useToast()
     const [showModal, setShowModal] = useState(false)
     const [category, setCategory] = useState('spam')
     const [description, setDescription] = useState('')
     const [isSubmitting, setIsSubmitting] = useState(false)
-    const [error, setError] = useState(null)
 
     const categories = [
         { value: 'spam', label: 'Spam', description: 'Contenido repetitivo o publicitario no deseado' },
@@ -24,53 +25,47 @@ const ReportButton = ({ contentType, contentId, contentAuthorId, onReportSubmitt
 
     const handleOpenModal = () => {
         if (!user || isGuest) {
-            alert('Debes iniciar sesión (no como invitado) para reportar contenido')
+            showToast('Debes iniciar sesión (no como invitado) para reportar contenido', 'warning')
             return
         }
         if (isOwnContent) {
-            alert('No puedes reportar tu propio contenido')
+            showToast('No puedes reportar tu propio contenido', 'warning')
             return
         }
         setShowModal(true)
-        setError(null)
     }
     const handleSubmit = async () => {
         if (!description.trim() && category === 'other') {
-            setError('Por favor, describe la razón del reporte')
+            showToast('Por favor, describe la razón del reporte', 'warning')
             return
         }
         setIsSubmitting(true)
-        setError(null)
-    try {
-        const endpoint = contentType === 'post' 
-        ? '/api/moderation/reports/posts/' 
-        : '/api/moderation/reports/comments/'
-        const payload = {
-            [contentType]: contentId,
-            category: category,
-            reason: description.trim() || `Reporte por ${categories.find(c => c.value === category)?.label || category}`
+        try {
+            const endpoint = contentType === 'post' 
+            ? '/api/moderation/reports/posts/' 
+            : '/api/moderation/reports/comments/'
+            const payload = {
+                [contentType]: contentId,
+                category: category,
+                reason: description.trim() || `Reporte por ${categories.find(c => c.value === category)?.label || category}`
+                }
+            await apiRequest(endpoint, {
+                method: 'POST',
+                body: JSON.stringify(payload)
+            })
+            setShowModal(false)
+            setCategory('spam')
+            setDescription('')
+            if (onReportSubmitted) {
+                onReportSubmitted(contentType, contentId)
             }
-        await apiRequest(endpoint, {
-            method: 'POST',
-            body: JSON.stringify(payload)
-        })
-
-        setShowModal(false)
-        setCategory('spam')
-        setDescription('')
-
-        if (onReportSubmitted) {
-            onReportSubmitted(contentType, contentId)
+            showToast('Reporte enviado correctamente. Los moderadores lo revisarán pronto.', 'success')
+        } catch (error) {
+            console.error('Error al reportar:', error)
+            showToast('Error al enviar el reporte. Intenta nuevamente.', 'error')
+        } finally {
+            setIsSubmitting(false)
         }
-        
-        alert('Reporte enviado correctamente. Los moderadores lo revisarán pronto.')
-        
-    } catch (error) {
-        console.error('Error al reportar:', error)
-        setError(error.message || 'Error al enviar el reporte. Intenta nuevamente.')
-    } finally {
-        setIsSubmitting(false)
-    }
     }
 
     if (!user || isGuest || isOwnContent) {
@@ -90,11 +85,6 @@ const ReportButton = ({ contentType, contentId, contentAuthorId, onReportSubmitt
                         <button onClick={() => setShowModal(false)} className="close-button" disabled={isSubmitting} aria-label="Cerrar"> X </button>
                     </div>
                     <div className="report-modal-body">
-                        {error && (
-                        <div className="error-message">
-                            {error}
-                        </div>
-                        )}
                         <div className="form-group">
                             <label htmlFor="report-category">Motivo del reporte:</label>
                             <select id="report-category" value={category} onChange={(e) => setCategory(e.target.value)} className="category-select" disabled={isSubmitting}>

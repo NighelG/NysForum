@@ -2,7 +2,7 @@ import React from 'react'
 import ReplyComment from './ReplyComment'
 import { useavatar } from '../hooks/useavatar'
 import mediaService from '../services/mediaSerivce.js'
-import ReportButton from '../components/ReportButton' // <-- AGREGADO
+import ReportButton from '../components/ReportButton'
 
 const CommentSection = ({ 
         comment, 

@@ -6,6 +6,7 @@ import CreatePostDrawer from '../components/CreatePostDrawer'
 import Sidebar from '../components/SideBar'
 import UserProfilePopup from '../components/UserProfilePopup'
 import { useAuth } from '../context/AuthContext'
+import { useToast } from '../context/ToastContext'
 import '../styles/Forum.css'
 
 const Forum = () => {
@@ -17,6 +18,7 @@ const Forum = () => {
     const navigate = useNavigate()
     const { user } = useAuth()
     const [selectedUser, setSelectedUser] = useState(null)
+    const { showToast } = useToast()
     
     useEffect(() => {
         loadPosts()
@@ -48,6 +50,7 @@ const Forum = () => {
             setPosts(adaptedPosts)
         } catch (err) {
             console.error('Error cargando posts:', err)
+            showToast("Error cargando publicaciones", "error")
         }
     }
     
@@ -59,6 +62,7 @@ const Forum = () => {
             navigate(`/posts/${id}`);
         } catch (error) {
             console.error('Error incrementando vista:', error);
+            showToast("No se pudo registrar la visualización", "warning")
             navigate(`/posts/${id}`);
         }
     }

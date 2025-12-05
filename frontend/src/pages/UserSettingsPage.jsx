@@ -2,17 +2,18 @@ import React, { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { authService } from '../services/authService'
 import { useAuth } from '../context/AuthContext'
+import { useToast } from '../context/ToastContext'
 import Sidebar from '../components/SideBar'
 import '../styles/UserSettingsPage.css'
 
 function UserSettingsPage() {
     const navigate = useNavigate()
     const { logout } = useAuth()
+    const { showToast } = useToast()
     const [user, setUser] = useState(null)
     const [activeSection, setActiveSection] = useState('profile')
     const [loading, setLoading] = useState(false)
     const [avatarLoading, setAvatarLoading] = useState(false)
-    const [messages, setMessages] = useState({ error: '', success: '' })
     const [formData, setFormData] = useState({
         bio: '',
         first_name: '',
@@ -21,10 +22,10 @@ function UserSettingsPage() {
     })
     const [avatarFile, setAvatarFile] = useState(null)
     const [avatarTimestamp, setAvatarTimestamp] = useState(Date.now())
+    const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
     const sections = ['profile', 'personalization', 'account', 'danger']
     const activeIndex = sections.indexOf(activeSection)
     useEffect(() => { loadUser() }, [])
-    const setMsg = (err = '', ok = '') => setMessages({ error: err, success: ok })
     const loadUser = async () => {
         try {
             const data = await authService.getCurrentUser()
@@ -36,7 +37,7 @@ function UserSettingsPage() {
                 email: data.email || ''
             })
         } catch {
-            setMsg('Error cargando datos del usuario')
+            showToast('Error cargando datos del usuario', 'error')
         }
     }
     const getAvatarUrl = () =>
@@ -48,67 +49,75 @@ function UserSettingsPage() {
             .test(correo)
     const updateProfile = async () => {
         setLoading(true)
-        setMsg()
         const updateData = Object.fromEntries(
             Object.entries(formData).filter(([key, val]) => val !== user[key])
         )
         if (updateData.email && !validarCorreo(updateData.email)) {
-            setMsg('Por favor ingresa un correo válido')
+            showToast('Por favor ingresa un correo válido', 'warning')
             return setLoading(false)
         }
         if (!Object.keys(updateData).length) {
-            setMsg('No hay cambios para guardar')
+            showToast('No hay cambios para guardar', 'info')
             return setLoading(false)
         }
         try {
             const updated = await authService.updateAccount(updateData)
             setUser(updated)
-            setMsg('', 'Perfil actualizado correctamente')
+            showToast('Perfil actualizado correctamente', 'success')
         } catch (e) {
-            setMsg(e.message || 'Error actualizando perfil')
+            showToast(e.message || 'Error actualizando perfil', 'error')
         }
         setLoading(false)
     }
     const updateAvatar = async () => {
-        if (!avatarFile) return setMsg('Selecciona una imagen primero')
+        if (!avatarFile) {
+            showToast('Selecciona una imagen primero', 'warning')
+            return
+        }
         setAvatarLoading(true)
-        setMsg()
         try {
             await authService.updateAvatar(avatarFile)
             setAvatarTimestamp(Date.now())
             await loadUser()
             setAvatarFile(null)
-            setMsg('', 'Avatar actualizado correctamente')
+            showToast('Avatar actualizado correctamente', 'success')
         } catch (e) {
-            setMsg(e.message || 'Error actualizando avatar')
+            showToast(e.message || 'Error actualizando avatar', 'error')
         }
         setAvatarLoading(false)
     }
     const deleteAccount = async () => {
-        if (!window.confirm('¿Estás seguro de que quieres eliminar tu cuenta? Esta acción no se puede deshacer.')) return
         setLoading(true)
         try {
             await authService.deleteProfile()
             localStorage.removeItem('authToken')
             localStorage.removeItem('refreshToken')
             localStorage.removeItem('logueado')
-            setMsg('', 'Cuenta eliminada correctamente')
+            showToast('Cuenta eliminada correctamente', 'success')
             setTimeout(() => navigate('/login'), 2000)
         } catch (e) {
-            setMsg(e.message || 'Error eliminando cuenta')
+            showToast(e.message || 'Error eliminando cuenta', 'error')
             setLoading(false)
         }
+        setShowDeleteConfirm(false)
     }
     const handleImageUpload = e => {
         const file = e.target.files[0]
         if (!file) return
-        if (!file.type.startsWith('image/')) return setMsg('El archivo debe ser una imagen')
-        if (file.size > 5 * 1024 * 1024) return setMsg('La imagen no debe pesar más de 5MB')
+        if (!file.type.startsWith('image/')) {
+            showToast('El archivo debe ser una imagen', 'warning')
+            return
+        }
+        if (file.size > 5 * 1024 * 1024) {
+            showToast('La imagen no debe pesar más de 5MB', 'warning')
+            return
+        }
         setAvatarFile(file)
     }
     const forceReloadAvatar = () => setAvatarTimestamp(Date.now())
     const handleLogout = () => {
         logout()
+        showToast('Sesion cerrada con exito', 'success')
         navigate('/login')
     }
     if (!user)
@@ -121,6 +130,24 @@ function UserSettingsPage() {
         )
     return (
         <div className="user-settings-page">
+            {showDeleteConfirm && (
+                <>
+                    <div className="modal-backdrop" onClick={() => setShowDeleteConfirm(false)}></div>
+                    <div className="modal-container" onClick={(e) => e.stopPropagation()}>
+                        <div className="modal-header">
+                            <h3>Confirmar Eliminación</h3>
+                        </div>
+                        <div className="modal-content">
+                            <p>¿Estás seguro de que quieres eliminar tu cuenta? Esta acción <strong>no se puede deshacer</strong>.</p>
+                            <p>Se eliminarán todos tus datos, publicaciones y comentarios.</p>
+                        </div>
+                        <div className="modal-footer">
+                            <button className="btn-secondary" onClick={() => setShowDeleteConfirm(false)} disabled={loading}>Cancelar</button>
+                            <button className="btn-danger" onClick={deleteAccount} disabled={loading}>{loading ? "Eliminando..." : "Eliminar Cuenta"}</button>
+                        </div>
+                    </div>
+                </>
+            )}
             <Sidebar />
             <div className="settings-container">
                 <header className="settings-header">
@@ -140,8 +167,6 @@ function UserSettingsPage() {
                     <div className="settings-carousel" style={{ transform: `translateX(-${activeIndex * 100}%)` }}>
                         <div className="settings-section">
                             <h2>Información del Perfil</h2>
-                            {messages.error && <div className="alert alert-error">{messages.error}</div>}
-                            {messages.success && <div className="alert alert-success">{messages.success}</div>}
                             <div className="profile-info">
                                 <img src={getAvatarUrl()} alt="Avatar" className="profile-picture" onError={e => e.target.src = '/defaultPFP.jpg'}key={`avatar-${avatarTimestamp}`}crossOrigin="anonymous"/>
                                 <div className="profile-details">
@@ -163,8 +188,6 @@ function UserSettingsPage() {
                         </div>
                         <div className="settings-section">
                             <h2>Personalización</h2>
-                            {messages.error && <div className="alert alert-error">{messages.error}</div>}
-                            {messages.success && <div className="alert alert-success">{messages.success}</div>}
                             <div className="form-group">
                                 <label>Avatar Actual</label>
                                 <div className="current-image">
@@ -190,8 +213,6 @@ function UserSettingsPage() {
                         </div>
                         <div className="settings-section">
                             <h2>Configuración de la Cuenta</h2>
-                            {messages.error && <div className="alert alert-error">{messages.error}</div>}
-                            {messages.success && <div className="alert alert-success">{messages.success}</div>}
                             <div className="form-group">
                                 <label>Nombre</label>
                                 <input type="text" className="form-input"value={formData.first_name}onChange={e => setFormData(prev => ({ ...prev, first_name: e.target.value }))}/>
@@ -208,12 +229,10 @@ function UserSettingsPage() {
                         </div>
                         <div className="settings-section danger-section">
                             <h2>Zona Peligrosa</h2>
-                            {messages.error && <div className="alert alert-error">{messages.error}</div>}
-                            {messages.success && <div className="alert alert-success">{messages.success}</div>}
                             <div className="danger-warning">
                                 <h3>Eliminar Cuenta</h3>
                                 <p>Esta acción es <strong>irreversible</strong>. Se eliminarán todos tus datos, publicaciones y comentarios.</p>
-                                <button className="btn-danger" onClick={deleteAccount} disabled={loading}>{loading ? "Eliminando..." : "Eliminar Mi Cuenta"}</button>
+                                <button className="btn-danger" onClick={() => setShowDeleteConfirm(true)} disabled={loading}>Eliminar Mi Cuenta</button>
                             </div>
                         </div>
                     </div>
