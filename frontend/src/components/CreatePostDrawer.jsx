@@ -111,7 +111,7 @@ function CreatePostDrawer({ isOpen, setIsOpen, onPostCreated }) {
       <div className={`create-post-drawer ${isOpen ? "open" : ""}`}>
         <div className="create-post-drawer-header">
           <h2 className="create-post-drawer-title">Nueva Discusión</h2>
-          <button className="create-post-drawer-close" onClick={() => setIsOpen(false)} aria-label="Cerrar">X</button>
+          <button className="create-post-drawer-close" onClick={() => setIsOpen(false)} aria-label="Cerrar"><img src="/close.png" alt="close" /></button>
         </div>
         <div className="create-post-drawer-content">
           <input type="text" placeholder="Título de la discusión *" className="create-post-input"  value={title} onChange={(e) => setTitle(e.target.value)}/>

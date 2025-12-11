@@ -1,8 +1,8 @@
 import React from 'react'
 import ReplyComment from './ReplyComment'
-import { useavatar } from '../hooks/useavatar'
 import mediaService from '../services/mediaSerivce.js'
 import ReportButton from '../components/ReportButton'
+import OwnerActions from '../components/OwnerActions'
 
 const CommentSection = ({ 
         comment, 
@@ -16,7 +16,9 @@ const CommentSection = ({
         onCancelReply, 
         onReplyContentChange, 
         onReply, 
-        onToggleReplies 
+        onToggleReplies,
+        // NUEVA PROP para recargar comentarios
+        onCommentActionSuccess
     }) => {
     const isReplying = replyingTo === comment.id
     const replyContent = replyContents[comment.id] || ''
@@ -24,18 +26,21 @@ const CommentSection = ({
     const showExpandButton = replies.length > 2
     const displayedReplies = expandedReplies[comment.id] ? replies : replies.slice(0, 2)
     const hiddenRepliesCount = replies.length - 2
+    
     const getCommentUsername = () => {
         if (comment.profile?.user?.username) return comment.profile.user.username
         if (comment.username) return comment.username
         if (comment.profile?.username) return comment.profile.username
         return 'Usuario'
     }
+    
     const getCommentAvatar = () => {
         const username = getCommentUsername()
         return username !== 'Usuario' 
             ? `http://localhost:8000/users/profiles/${username}/avatar/` 
             : "/defaultPFP.jpg"
     }
+    
     const renderCommentMedia = () => {
         if (!comment.media_files || comment.media_files.length === 0) return null;
         return (
@@ -60,6 +65,7 @@ const CommentSection = ({
             </div>
         )
     }
+    
     return (
         <div className="comment-item">
             <div className="comment-header">
@@ -72,10 +78,12 @@ const CommentSection = ({
                     <span className="comment-date">{new Date(comment.created_at).toLocaleString()}</span>
                 </div>
             </div>
+            
             <div className="comment-content">
                 <p>{comment.content}</p>
                 {renderCommentMedia()}
             </div>
+            
             <div className="comment-actions">
                 <button className={`like-btn ${comment.user_reaction === 'like' ? 'active' : ''}`}
                 onClick={() => onLike(comment.id)} disabled={!currentUser || currentUser.isGuest}>
@@ -101,6 +109,21 @@ const CommentSection = ({
                 )}
 
             </div>
+
+            {currentUser && comment && comment.profile && (
+                <OwnerActions
+                    contentType="comment"
+                    contentId={comment.id}
+                    authorProfileId={comment.profile.id}
+                    currentUser={currentUser}
+                    onUpdate={(id, data) => import('../services/commentService').then(module => module.commentService.updateComment(id, data))}
+                    onDelete={(id) => import('../services/commentService').then(module => module.commentService.deleteComment(id))}
+                    onSuccess={onCommentActionSuccess}
+                    initialContent={comment.content}
+                    className="comment-owner-actions"
+                />
+            )}
+
             {isReplying && (
                 <div className="reply-form">
                     <textarea value={replyContent} onChange={(e) => onReplyContentChange(e.target.value, comment.id)} placeholder="Escribe tu respuesta..." className="reply-textarea" rows="3" />
@@ -127,6 +150,7 @@ const CommentSection = ({
                         onCancelReply={onCancelReply}
                         onReplyContentChange={onReplyContentChange}
                         onReply={onReply}
+                        onReplyActionSuccess={onCommentActionSuccess}
                     />
                 ))}
                 {showExpandButton && !expandedReplies[comment.id] && (
@@ -137,7 +161,6 @@ const CommentSection = ({
                 )}
                 </div>
             )}
-            
         </div>
     )
 }

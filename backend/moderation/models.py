@@ -117,7 +117,8 @@ class ModerationActionPost(models.Model):
     target_post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name='moderation_actions')
     action = models.CharField(max_length=20, choices=[
         ('delete', 'Eliminar'), ('hide', 'Ocultar'), ('warn', 'Advertencia'), 
-        ('approve', 'Aprobar'), ('pin', 'Fijar'), ('unpin', 'Desfijar')
+        ('approve', 'Aprobar'), ('pin', 'Fijar'), ('unpin', 'Desfijar'),
+        ('review', 'Revisar'), ('dismiss', 'Desestimar')
     ])
     reason = models.TextField(blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True) 
@@ -129,7 +130,7 @@ class ModerationActionComment(models.Model):
     target_comment = models.ForeignKey(Comment, on_delete=models.CASCADE, related_name='moderation_actions')
     action = models.CharField(max_length=20, choices=[
         ('delete', 'Eliminar'), ('hide', 'Ocultar'), ('warn', 'Advertencia'), 
-        ('approve', 'Aprobar')
+        ('approve', 'Aprobar'), ('review', 'Revisar'), ('dismiss', 'Desestimar')
     ])
     reason = models.TextField(blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)

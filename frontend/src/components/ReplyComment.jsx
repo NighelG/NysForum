@@ -1,6 +1,7 @@
 import React from 'react'
 import mediaService from '../services/mediaSerivce.js'
 import ReportButton from '../components/ReportButton'
+import OwnerActions from '../components/OwnerActions'
 
 const ReplyComment = ({ 
     reply, 
@@ -13,7 +14,8 @@ const ReplyComment = ({
     onStartReply, 
     onCancelReply, 
     onReplyContentChange, 
-    onReply 
+    onReply,
+    onReplyActionSuccess
 }) => {
     const isReplying = replyingTo === `${parentId}-${reply.id}`
     const replyContent = replyContents[parentId]?.[reply.id] || ''
@@ -24,12 +26,14 @@ const ReplyComment = ({
         if (reply.profile?.username) return reply.profile.username
         return 'Usuario'
     }
+    
     const getReplyAvatar = () => {
         const username = getReplyUsername()
         return username !== 'Usuario' 
             ? `http://localhost:8000/users/profiles/${username}/avatar/` 
             : "/defaultPFP.jpg"
     }
+    
     const renderReplyMedia = () => {
         if (!reply.media_files || reply.media_files.length === 0) return null;
         return (
@@ -58,6 +62,7 @@ const ReplyComment = ({
             </div>
         )
     }
+    
     return (
         <div className="reply-item">
             <div className="comment-header">
@@ -71,10 +76,12 @@ const ReplyComment = ({
                     <span className="comment-date">{new Date(reply.created_at).toLocaleString()}</span>
                 </div>
             </div>
+            
             <div className="comment-content">
                 <p>{reply.content}</p>
                 {renderReplyMedia()}
             </div>
+            
             <div className="comment-actions">
                 <button className={`like-btn ${reply.user_reaction === 'like' ? 'active' : ''}`}onClick={() => onLike(reply.id)}disabled={!currentUser || currentUser.isGuest}>
                     <img src="/like.png" alt="Like" className="reaction-icon" />
@@ -97,6 +104,21 @@ const ReplyComment = ({
                     />
                 )}
             </div>
+
+            {currentUser && reply && reply.profile && (
+                <OwnerActions
+                    contentType="comment"
+                    contentId={reply.id}
+                    authorProfileId={reply.profile.id}
+                    currentUser={currentUser}
+                    onUpdate={(id, data) => import('../services/commentService').then(module => module.commentService.updateComment(id, data))}
+                    onDelete={(id) => import('../services/commentService').then(module => module.commentService.deleteComment(id))}
+                    onSuccess={onReplyActionSuccess}
+                    initialContent={reply.content}
+                    className="reply-owner-actions"
+                />
+            )}
+
             {isReplying && (
                 <div className="reply-form">
                     <textarea value={replyContent} onChange={(e) => onReplyContentChange(e.target.value, reply.id, parentId)}placeholder="Escribe tu respuesta..."className="reply-textarea"rows="3"/>

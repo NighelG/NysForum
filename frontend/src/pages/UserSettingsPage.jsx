@@ -94,7 +94,7 @@ function UserSettingsPage() {
             localStorage.removeItem('refreshToken')
             localStorage.removeItem('logueado')
             showToast('Cuenta eliminada correctamente', 'success')
-            setTimeout(() => navigate('/login'), 2000)
+            setTimeout(() => navigate('/login'), 200)
         } catch (e) {
             showToast(e.message || 'Error eliminando cuenta', 'error')
             setLoading(false)

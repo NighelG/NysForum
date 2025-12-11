@@ -82,7 +82,7 @@ const ReportButton = ({ contentType, contentId, contentAuthorId, onReportSubmitt
                 <div className="report-modal" onClick={(e) => e.stopPropagation()}>
                     <div className="report-modal-header">
                         <h3>Reportar {contentType === 'post' ? 'Publicación' : 'Comentario'}</h3>
-                        <button onClick={() => setShowModal(false)} className="close-button" disabled={isSubmitting} aria-label="Cerrar"> X </button>
+                        <button onClick={() => setShowModal(false)} className="close-button" disabled={isSubmitting} aria-label="Cerrar"><img src="/close.png" alt="close" /></button>
                     </div>
                     <div className="report-modal-body">
                         <div className="form-group">

@@ -49,41 +49,31 @@ const GuestRoute = ({ children }) => {
 function Routing() {
   return (
     <Routes>
-      <Route 
-        path="/login" 
-        element={
+      <Route path="/login" element={
           <PublicRoute>
             <LoginPage />
           </PublicRoute>
         } 
       />
-      <Route 
-        path="/forum" 
-        element={
+      <Route path="/forum" element={
           <GuestRoute>
             <Forum />
           </GuestRoute>
         } 
       />
-      <Route 
-        path="/settings" 
-        element={
+      <Route path="/settings" element={
           <ProtectedRoute>
             <UserSettingsPage />
           </ProtectedRoute>
         } 
       />
-      <Route 
-        path="/posts/:id" 
-        element={
+      <Route path="/posts/:id" element={
           <GuestRoute>
             <PostPage />
           </GuestRoute>
         } 
       />
-      <Route 
-        path="/moderation" 
-        element={
+      <Route path="/moderation" element={
           <ProtectedAdminRoute>
             <ModerationMenu />
           </ProtectedAdminRoute>

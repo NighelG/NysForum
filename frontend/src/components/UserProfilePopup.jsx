@@ -76,7 +76,7 @@ const UserProfilePopup = ({ username, isOpen, onClose }) => {
                             )}
                         </div>
                     </div>
-                    <button className="close-modal-btn" onClick={onClose}>×</button>
+                    <button className="close-modal-btn" onClick={onClose}><img src="/close.png" alt="close" /></button>
                 </div>
                 {userData && (
                     <div className="user-stats">

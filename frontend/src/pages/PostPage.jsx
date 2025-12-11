@@ -9,6 +9,7 @@ import mediaService from '../services/mediaSerivce.js'
 import Sidebar from '../components/SideBar.jsx'
 import CommentSection from '../components/CommentSection.jsx'
 import ReportButton from '../components/ReportButton.jsx'
+import OwnerActions from '../components/OwnerActions.jsx'
 import '../styles/PostPage.css'
 
 const PostPage = () => {
@@ -17,6 +18,7 @@ const PostPage = () => {
     const { user } = useAuth()
     const { showToast } = useToast()
     const { execute, loading, error } = useApi()
+    
     const [post, setPost] = useState(null)
     const [comments, setComments] = useState([])
     const [searchTerm, setSearchTerm] = useState('')
@@ -33,7 +35,7 @@ const PostPage = () => {
     const loadPost = useCallback(async () => {
         try {
             const postData = await execute(() => postService.getPost(id))
-            setPost(postData)
+            setPost({ ...postData })
         } catch (err) {
             console.error('Error cargando post:', err)
             showToast('No se pudo cargar la publicación', 'error')
@@ -64,7 +66,7 @@ const PostPage = () => {
                     user_reaction: c.user_reaction || null,
                     replies: (c.replies || []).sort((a, b) => new Date(a.created_at) - new Date(b.created_at))
                 }))
-            setComments(adapted)
+            setComments([...adapted])
         } catch (err) {
             console.error('Error cargando comentarios:', err)
             showToast('No se pudieron cargar los comentarios', 'error')
@@ -82,15 +84,17 @@ const PostPage = () => {
         if (!user || user.isGuest) return
         try {
             await execute(() => serviceFn(idRefresh, action))
-            action.includes('post') ? loadPost() : loadComments()
+            serviceFn === postService.reactToPost
+                ? loadPost()
+                : loadComments()
         } catch (err) {
             console.error(`Error al reaccionar:`, err)
             showToast('No se pudo registrar tu reacción', 'error')
         }
     }
 
-    const handleLikePost = () => handleReaction('like', postService.reactToPost, post.id)
-    const handleDislikePost = () => handleReaction('dislike', postService.reactToPost, post.id)
+    const handleLikePost = () => handleReaction('like', postService.reactToPost, post?.id)
+    const handleDislikePost = () => handleReaction('dislike', postService.reactToPost, post?.id)
     const handleLike = id => handleReaction('like', commentService.reactToComment, id)
     const handleDislike = id => handleReaction('dislike', commentService.reactToComment, id)
 
@@ -106,6 +110,7 @@ const PostPage = () => {
 
         return { valid: true, mediaType }
     }
+    
     const processFiles = (files, setError, callback) => {
         const validFiles = []
         let hasError = false
@@ -132,15 +137,19 @@ const PostPage = () => {
             showToast('No se pudieron agregar los archivos', 'warning')
         }
     }
+    
     const handleCommentFileSelect = e =>
         processFiles(
             Array.from(e.target.files),
             setCommentErrorMsg,
             valid => setCommentMediaFiles(prev => [...prev, ...valid])
         )
+    
     const removeCommentFile = index =>
         setCommentMediaFiles(prev => prev.filter((_, i) => i !== index))
+    
     const getReplyKey = (c, p) => (p ? `${p}-${c}` : c)
+    
     const handleReplyFileSelect = (e, commentId, parentId = null) => {
         const key = getReplyKey(commentId, parentId)
         processFiles(
@@ -153,6 +162,7 @@ const PostPage = () => {
                 }))
         )
     }
+    
     const removeReplyFile = (index, commentId, parentId = null) => {
         const key = getReplyKey(commentId, parentId)
         setReplyMediaFiles(prev => ({
@@ -160,6 +170,7 @@ const PostPage = () => {
             [key]: prev[key].filter((_, i) => i !== index)
         }))
     }
+    
     const handleSubmitComment = async e => {
         e.preventDefault()
         if (!commentContent.trim()) {
@@ -185,12 +196,14 @@ const PostPage = () => {
             showToast('No se pudo publicar el comentario', 'error')
         }
     }
+    
     const resetCommentForm = () => {
         setCommentContent('')
         setCommentMediaFiles([])
         setCommentErrorMsg('')
         setIsFormOpen(false)
     }
+    
     const handleReply = async (commentId, parentId = null) => {
         const key = getReplyKey(commentId, parentId)
         const content = parentId ? replyContents[parentId]?.[commentId] : replyContents[commentId]
@@ -219,6 +232,7 @@ const PostPage = () => {
             showToast('No se pudo publicar la respuesta', 'error')
         }
     }
+    
     const resetReplyForm = (commentId, parentId = null) => {
         const key = getReplyKey(commentId, parentId)
 
@@ -230,6 +244,7 @@ const PostPage = () => {
         setReplyMediaFiles(prev => ({ ...prev, [key]: [] }))
         setReplyingTo(null)
     }
+    
     const handleStartReply = (commentId, parentId = null) => {
         setReplyingTo(getReplyKey(commentId, parentId))
         setReplyContents(prev =>
@@ -238,6 +253,7 @@ const PostPage = () => {
                 : { ...prev, [commentId]: prev[commentId] || '' }
         )
     }
+    
     const handleReplyContentChange = (text, commentId, parentId = null) => {
         setReplyContents(prev =>
             parentId
@@ -245,8 +261,10 @@ const PostPage = () => {
                 : { ...prev, [commentId]: text }
         )
     }
+    
     const toggleReplies = id =>
         setExpandedReplies(prev => ({ ...prev, [id]: !prev[id] }))
+    
     const filteredComments = useMemo(
         () =>
             comments.filter(c =>
@@ -254,6 +272,7 @@ const PostPage = () => {
             ),
         [comments, searchTerm]
     )
+    
     const renderPostMedia = () =>
         post?.media_files?.length > 0 && (
             <div className="post-media-gallery">
@@ -278,6 +297,7 @@ const PostPage = () => {
                 })}
             </div>
         )
+
     const renderReplyMediaSection = (commentId, parentId = null) => {
         const key = getReplyKey(commentId, parentId)
         const files = replyMediaFiles[key] || []
@@ -293,6 +313,7 @@ const PostPage = () => {
             </div>
         )
     }
+
     if (loading && !post)
         return (
             <div className="loading-container">
@@ -300,6 +321,7 @@ const PostPage = () => {
                 <button onClick={() => navigate('/forum')} className="back-button">Volver al Foro</button>
             </div>
         )
+    
     if (error && !post)
         return (
             <div className="error-container">
@@ -307,6 +329,7 @@ const PostPage = () => {
                 <button onClick={() => navigate('/forum')} className="back-button">Volver al Foro</button>
             </div>
         )
+    
     if (!post)
         return (
             <div className="error-container">
@@ -314,17 +337,20 @@ const PostPage = () => {
                 <button onClick={() => navigate('/forum')} className="back-button">Volver al Foro</button>
             </div>
         )
+    
     const postUsername = post.username || post.profile?.username || 'Usuario'
     const postAvatarUrl =
         postUsername !== 'Usuario'
             ? `http://localhost:8000/users/profiles/${postUsername}/avatar/`
             : '/defaultPFP.jpg'
+    
     return (
         <div className="post-detail-page">
             <Sidebar />
             <div className="main-content">
                 <div className="post-detail-container">
                     <button onClick={() => navigate('/forum')} className="back-button">Volver al Foro</button>
+                    
                     <div className="post-card">
                         <div className="post-header">
                             <img src={postAvatarUrl} alt="Avatar" className="post-avatar" onError={e => (e.target.src = '/defaultPFP.jpg')}/>
@@ -360,15 +386,27 @@ const PostPage = () => {
                                 <img src="/views.png" className="icono-negro" /> Vistas: {post.views_count || 0}
                             </span>
                         </div>
-
+                        {user && post && (
+                            <OwnerActions
+                                contentType="post"
+                                contentId={post.id}
+                                authorProfileId={post.profile?.id}
+                                currentUser={user}
+                                onUpdate={postService.updatePost}
+                                onDelete={postService.deletePost}
+                                onSuccess={loadPost}
+                                initialTitle={post.title}
+                                initialContent={post.content}
+                                className="post-owner-actions"
+                            />
+                        )}
                         {post && post.profile && (
                             <div className="post-report-section">
                                 <ReportButton 
                                     contentType="post"
                                     contentId={post.id}
                                     contentAuthorId={post.profile.id}
-                                    onReportSubmitted={() => {
-                                    }}
+                                    onReportSubmitted={() => {}}
                                 />
                             </div>
                         )}
@@ -403,7 +441,9 @@ const PostPage = () => {
                                 <button type="submit" className="btn-submit" disabled={!commentContent.trim()}>Publicar Comentario</button>
                             </form>
                         )}
+                        
                         {replyErrorMsg && <p className="error-message">{replyErrorMsg}</p>}
+                        
                         <div className="comments-list">
                             {filteredComments.length === 0 ? (
                                 <div className="no-comments">
@@ -428,7 +468,8 @@ const PostPage = () => {
                                         onReply={handleReply} 
                                         onToggleReplies={toggleReplies} 
                                         renderReplyMediaSection={renderReplyMediaSection} 
-                                        handleReplyFileSelect={handleReplyFileSelect} 
+                                        handleReplyFileSelect={handleReplyFileSelect}
+                                        onCommentActionSuccess={loadComments}
                                     />
                                 ))
                             )}
@@ -439,4 +480,5 @@ const PostPage = () => {
         </div>
     )
 }
+
 export default PostPage

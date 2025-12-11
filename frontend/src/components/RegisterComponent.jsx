@@ -68,7 +68,6 @@ function RegisterComponent({ onClose }) {
             showToast("Correo electrónico no válido", "warning")
             return
         }
-        
         setIsLoading(true)
         try {
             console.log('Iniciando proceso de registro...')
@@ -88,15 +87,24 @@ function RegisterComponent({ onClose }) {
             }, 2000)
         } catch (error) {
             console.error('Error en registro:', error)
-            showToast('Error en el registro. Verifica tus datos.', 'error')
-            if (error.message.includes('username')) {
-                setErrorMsg('El nombre de usuario ya existe o no es válido')
-            } else if (error.message.includes('email')) {
-                setErrorMsg('El correo electrónico ya está registrado o no es válido')
-            } else if (error.message.includes('password')) {
-                setErrorMsg('La contraseña no cumple los requisitos')
-            } else {
-                setErrorMsg(error.message || "Error al registrar el usuario.")
+            if (error.message && error.message.includes('IntegrityError')) {
+                setErrorMsg('El nombre de usuario o correo electrónico ya está registrado.')
+                showToast('Usuario o correo ya existen', 'error')
+            } 
+            else if (error.message && error.message.includes('<!DOCTYPE html>')) {
+                setErrorMsg('Error en el servidor. Intenta más tarde.')
+                showToast('Error del servidor', 'error')
+            }
+            else if (error.message && (
+                error.message.includes('Network') || 
+                error.message.includes('Failed to fetch')
+            )) {
+                setErrorMsg('Error de conexión. Verifica tu internet.')
+                showToast('Error de conexión', 'error')
+            }
+            else {
+                setErrorMsg('Error en el registro. Verifica tus datos.')
+                showToast('Error en el registro', 'error')
             }
         } finally {
             setIsLoading(false)
@@ -109,7 +117,7 @@ function RegisterComponent({ onClose }) {
             <div className="register-modal-container" onClick={(e) => e.stopPropagation()}>
                 <div className="register-modal-header">
                     <h3 className="register-modal-title">Crear Cuenta</h3>
-                    <button onClick={onClose} className="register-modal-close" aria-label="Cerrar"> X</button>
+                    <button onClick={onClose} className="register-modal-close" aria-label="Cerrar"><img src="/close.png" alt="close" /></button>
                 </div>
                 {errorMsg && (
                     <div className={errorMsg.includes('success:') ? 'register-success' : 'register-error'}>

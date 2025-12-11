@@ -1,0 +1,172 @@
+.owner-action-buttons {
+    display: flex;
+    gap: 10px;
+    margin: 15px 0;
+    padding: 10px 0;
+    border-top: 1px solid #e0e0e0;
+}
+
+.owner-btn-edit, .owner-btn-delete {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+    border: none;
+    border-radius: 6px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-weight: 500;
+}
+
+.owner-btn-edit {
+    background-color: #4a90e2;
+    color: white;
+}
+
+.owner-btn-edit:hover {
+    background-color: #3a7bc8;
+}
+
+.owner-btn-delete {
+    background-color: #e74c3c;
+    color: white;
+}
+
+.owner-btn-delete:hover {
+    background-color: #c0392b;
+}
+
+.owner-action-icon {
+    width: 16px;
+    height: 16px;
+    filter: brightness(100%) saturate(100%);
+}
+
+.owner-edit-form {
+    margin: 20px 0;
+    padding: 15px;
+    background-color: #f9f9f9;
+    border-radius: 8px;
+    border: 1px solid #e0e0e0;
+}
+
+.owner-edit-title {
+    width: 100%;
+    padding: 12px;
+    margin-bottom: 15px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    font-size: 18px;
+    font-weight: bold;
+}
+
+.owner-edit-content {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    font-size: 14px;
+    line-height: 1.5;
+    resize: vertical;
+    min-height: 100px;
+}
+
+.owner-edit-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 15px;
+}
+
+.owner-btn-save {
+    background-color: #2ecc71;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 500;
+}
+
+.owner-btn-save:hover {
+    background-color: #27ae60;
+}
+
+.owner-btn-save:disabled {
+    background-color: #95a5a6;
+    cursor: not-allowed;
+}
+
+.owner-btn-cancel {
+    background-color: #bdc3c7;
+    color: #333;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 500;
+}
+
+.owner-btn-cancel:hover {
+    background-color: #a0a7ac;
+}
+
+.owner-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.owner-delete-modal {
+    background-color: white;
+    padding: 30px;
+    border-radius: 10px;
+    max-width: 400px;
+    width: 90%;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+}
+
+.owner-delete-modal h3 {
+    margin-top: 0;
+    color: #e74c3c;
+    font-size: 20px;
+}
+
+.owner-delete-modal p {
+    margin: 15px 0 25px;
+    color: #666;
+    line-height: 1.5;
+    font-size: 14px;
+}
+
+.owner-modal-actions {
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end;
+}
+
+.owner-btn-confirm-delete {
+    background-color: #e74c3c;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 500;
+}
+
+.owner-btn-confirm-delete:hover {
+    background-color: #c0392b;
+}
+
+.owner-btn-confirm-delete:disabled {
+    background-color: #e67c73;
+    cursor: not-allowed;
+}

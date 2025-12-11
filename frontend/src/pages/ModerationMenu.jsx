@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState, useCallback, useMemo, useReducer } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
@@ -215,9 +214,9 @@ function ModerationMenu() {
         return (
             <div className="history-container">
             <div className="history-stats">
-                <span>Posts: {history.posts.length}</span>
-                <span>Comentarios: {history.comments.length}</span>
-                <span>Total: {allActions.length}</span>
+                <span>Posts:{history.posts.length}</span>
+                <span>  Comentarios:{history.comments.length}</span>
+                <span>  Total:{allActions.length}</span>
             </div>
             
             {allActions.slice(0, 50).map(action => (

@@ -412,22 +412,42 @@ class ResolveReportView(APIView):
                 
                 action_message = 'ninguna acción adicional'
                 
+                ACTION_MAPPING = {
+                    'remove': 'delete',
+                    'warn': 'warn',
+                    'reviewed': 'review',
+                    'dismissed': 'dismiss',
+                    'none': 'approve'
+                }
+                
+                log_action = ACTION_MAPPING.get(action_taken, 'approve')
+                
+                try:
+                    if content_type_str == 'post':
+                        target_post = content if content else report.post
+                        if target_post:
+                            ModerationActionPost.objects.create(
+                                moderator=request.user.profile,
+                                target_post=target_post,
+                                action=log_action,
+                                reason=f"Reporte #{report_id}: {admin_notes}" if admin_notes else f"Estado: {new_status}"
+                            )
+                    elif content_type_str == 'comment':
+                        target_comment = content if content else report.comment
+                        if target_comment:
+                            ModerationActionComment.objects.create(
+                                moderator=request.user.profile,
+                                target_comment=target_comment,
+                                action=log_action,
+                                reason=f"Reporte #{report_id}: {admin_notes}" if admin_notes else f"Estado: {new_status}"
+                            )
+                except Exception as e:
+                    print(f"[Moderation Log] Error creando registro: {str(e)}")
+                
                 if action_taken == 'remove' and content:
                     if content_type_str == 'post':
-                        ModerationActionPost.objects.create(
-                            moderator=request.user.profile,
-                            target_post=content,
-                            action='delete',
-                            reason=f"Reporte #{report_id} resuelto: {admin_notes}"
-                        )
                         self._delete_post_media(content)
                     else:
-                        ModerationActionComment.objects.create(
-                            moderator=request.user.profile,
-                            target_comment=content,
-                            action='delete',
-                            reason=f"Reporte #{report_id} resuelto: {admin_notes}"
-                        )
                         self._delete_comment_media(content)
                     
                     content.delete()
@@ -443,21 +463,6 @@ class ResolveReportView(APIView):
                         print(f"Error creando notificación: {str(e)}")
                         
                 elif action_taken == 'warn' and content:
-                    if content_type_str == 'post':
-                        ModerationActionPost.objects.create(
-                            moderator=request.user.profile,
-                            target_post=content,
-                            action='warn',
-                            reason=f"Reporte #{report_id}: {admin_notes}"
-                        )
-                    else:
-                        ModerationActionComment.objects.create(
-                            moderator=request.user.profile,
-                            target_comment=content,
-                            action='warn',
-                            reason=f"Reporte #{report_id}: {admin_notes}"
-                        )
-                    
                     try:
                         Notification.objects.create(
                             recipient=content.profile,
@@ -467,6 +472,11 @@ class ResolveReportView(APIView):
                         print(f"Error creando notificación: {str(e)}")
                     
                     action_message = 'usuario advertido'
+                
+                if action_taken == 'reviewed':
+                    action_message = 'reporte marcado como revisado'
+                elif action_taken == 'dismissed':
+                    action_message = 'reporte desestimado'
             
             return Response({
                 'message': f'Reporte {content_type_str} #{report_id} actualizado a "{new_status}"',

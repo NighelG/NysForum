@@ -9,8 +9,8 @@ function HistoryItem({ action }) {
   return (
     <div className="history-item">
         <div className="history-header">
-            <span className={`action-type ${isPost ? 'post' : 'comment'}`}>
-                {isPost ? 'Post' : 'Comentario'}
+            <span className={`action-type ${isPost ? 'post ' : 'comment '}`}>
+                {isPost ? 'Post ' : 'Comentario '}
             </span>
             <span className="moderator">{action.moderator_username}</span>
             <span className={`action ${action.action}`}>
