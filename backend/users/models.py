@@ -4,7 +4,6 @@ from django.contrib.auth.models import User
 class Profile(models.Model):
     STATUS_CHOICES = [
         ('normal', 'Normal'),
-        ('silenciado', 'Silenciado'),
         ('suspendido', 'Suspendido'),
         ('baneado', 'Baneado'),
     ]

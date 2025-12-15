@@ -24,7 +24,7 @@ class CategoryDetailView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
-    lookup_field = 'id'
+    """ lookup_field = 'id' """
 
 class PostListCreateView(generics.ListCreateAPIView):
     queryset = Post.objects.select_related('profile__user').prefetch_related('categories', 'media_files')

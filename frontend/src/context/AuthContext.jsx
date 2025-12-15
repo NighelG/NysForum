@@ -13,46 +13,80 @@ export const AuthProvider = ({ children }) => {
     
     const checkAuth = async () => {
         const token = localStorage.getItem('authToken')
-        const isGuest = localStorage.getItem('isGuest')
-
-        if (isGuest) {
-            setUser({ 
-                isGuest: true, 
-                username: 'Invitado',
-                id: 'guest',
-                role: 'guest'
-            })
-            setLoading(false)
-            return
-        }
-
         if (!token) {
+            setUser(null)
             setLoading(false)
-            return
+            return false
         }
         
         try {
-            const userData = await authService.getCurrentUser()
-            setUser({ ...userData, isGuest: false })
-        } catch (error) {
-            console.error('Error verificando autenticación:', error)
-            localStorage.removeItem('authToken')
-        } finally {
+            const response = await fetch('http://localhost:8000/api/users/profiles/me/', {
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                }
+            })
+            
+            if (!response.ok) {
+                localStorage.removeItem('authToken')
+                localStorage.removeItem('logueado')
+                localStorage.removeItem('user_profile')
+                setUser(null)
+                setLoading(false)
+                return false
+            }
+            
+            const userData = await response.json()
+            setUser(userData)
             setLoading(false)
+            return true
+            
+        } catch (error) {
+            localStorage.removeItem('authToken')
+            localStorage.removeItem('logueado')
+            localStorage.removeItem('user_profile')
+            setUser(null)
+            setLoading(false)
+            return false
         }
     }
-    
+
     const login = async (username, password) => {
         try {
-            const tokens = await authService.login(username, password)
-            localStorage.setItem('authToken', tokens.access)
-            localStorage.removeItem('isGuest')
+            const response = await fetch('http://localhost:8000/api/token/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ username, password })
+            })
             
-            const userData = await authService.getCurrentUser()
-            setUser({ ...userData, isGuest: false })
-            return userData
+            if (!response.ok) {
+                throw new Error('Credenciales incorrectas')
+            }
+            
+            const data = await response.json()
+            localStorage.setItem('authToken', data.access)
+            
+            const profileResponse = await fetch('http://localhost:8000/api/users/profiles/me/', {
+                headers: {
+                    'Authorization': `Bearer ${data.access}`,
+                    'Content-Type': 'application/json'
+                }
+            })
+            
+            if (!profileResponse.ok) {
+                localStorage.removeItem('authToken')
+                throw new Error('Error obteniendo perfil')
+            }
+            
+            const userProfile = await profileResponse.json()
+            setUser(userProfile)
+            return userProfile
+            
         } catch (error) {
-            throw new Error(error.message || 'Credenciales inválidas')
+            localStorage.removeItem('authToken')
+            throw error
         }
     }
 
@@ -65,6 +99,7 @@ export const AuthProvider = ({ children }) => {
             id: 'guest',
             role: 'guest'
         })
+        setLoading(false)
     }
     
     const register = async (userData) => {

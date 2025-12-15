@@ -15,35 +15,70 @@ function LoginPage() {
     const { login, loginAsGuest } = useAuth()
     const { showToast } = useToast()
     
-    const handleInvitado = () => {
-        localStorage.setItem(
-            "logueado",
-            JSON.stringify({
-                identificacion: "invitado",
-                usuario: "Invitado",
-                admin: false
-            })
-        )
-        showToast("Entraste como invitado", "info")
-        navigate('/forum')
-    }
-
     const handleLogin = async () => {
         if (!user || !password) {
             setErrorMsg("Por favor llena todos los espacios")
             showToast("Por favor llena todos los espacios", "warning")
             return
         }
+        
         try {
-            const userData = await login(user, password)
+            const tokenResponse = await fetch('http://localhost:8000/api/token/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ username: user, password })
+            })
+            
+            if (!tokenResponse.ok) {
+                throw new Error('Credenciales incorrectas')
+            }
+            
+            const tokenData = await tokenResponse.json()
+            const accessToken = tokenData.access
+            
+            const profileResponse = await fetch('http://localhost:8000/api/users/profiles/me/', {
+                method: 'GET',
+                headers: {
+                    'Authorization': `Bearer ${accessToken}`,
+                    'Content-Type': 'application/json'
+                }
+            })
+            
+            if (!profileResponse.ok) {
+                throw new Error('Error obteniendo perfil')
+            }
+            
+            const userProfile = await profileResponse.json()
+            
+            if (userProfile.status === 'suspendido') {
+                setErrorMsg("Cuenta suspendida, por favor intente más adelante")
+                showToast("Cuenta suspendida, por favor intente más adelante", "warning")
+                return
+            }
+            
+            if (userProfile.status === 'baneado') {
+                setErrorMsg("Cuenta baneada permanentemente")
+                showToast("Cuenta baneada permanentemente", "warning")
+                return
+            }
+            
+            localStorage.setItem('authToken', accessToken)
+            
+            await login(user, password)
+            
             localStorage.setItem(
                 "logueado",
                 JSON.stringify({
-                    identificacion: userData.id || "user",
-                    usuario: userData.username || user,
-                    admin: userData.role === 'admin' || userData.role === 'true_admin'
+                    identificacion: userProfile.id || "user",
+                    usuario: userProfile.username || user,
+                    admin: userProfile.role === 'admin' || userProfile.role === 'true_admin'
                 })
             )
+            
+            localStorage.setItem('user_profile', JSON.stringify(userProfile))
+            
             const mensajesBienvenida = [
                 "¡Listo para comentar cosas buenas!",
                 "¡Nos alegra verte por aquí!",
@@ -110,7 +145,6 @@ function LoginPage() {
             showToast(msg, "error")
         }
     }
-
 
     return (
         <div className="login-container">

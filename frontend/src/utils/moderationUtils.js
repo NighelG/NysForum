@@ -1,98 +1,154 @@
 export const SECTIONS = [
   { id: 'pending', label: 'Reportes Pendientes' },
-  { id: 'history', label: 'Historial de Acciones' },
-  { id: 'stats', label: 'Estadísticas' }
+  { id: 'history', label: 'Historial' },
+  { id: 'stats', label: 'Estadísticas' },
+  { id: 'categories', label: 'Categorías' }
 ]
 
 export const CATEGORIES = [
   { value: 'spam', label: 'Spam' },
-  { value: 'harassment', label: 'Acoso' },
   { value: 'inappropriate', label: 'Contenido inapropiado' },
-  { value: 'misinformation', label: 'Información falsa' },
+  { value: 'harassment', label: 'Acoso' },
   { value: 'other', label: 'Otro' }
 ]
 
-export const ACTIONS = [
+export const RESOLVE_ACTIONS = [
   { value: 'reviewed', label: 'Marcar como revisado' },
-  { value: 'dismissed', label: 'Desestimar reporte' },
-  { value: 'warn', label: 'Advertir usuario' },
-  { value: 'remove', label: 'Eliminar contenido' }
+  { value: 'dismissed', label: 'Descartar reporte' },
+  { value: 'content_removed', label: 'Contenido eliminado' },
+  { value: 'user_warned', label: 'Usuario advertido' },
+  { value: 'user_suspended', label: 'Usuario suspendido' },
+  { value: 'user_banned', label: 'Usuario baneado' }
 ]
 
-export const ACTION_LABELS = {
-  'delete': 'Eliminar',
-  'warn': 'Advertencia',
-  'approve': 'Aprobar',
-  'hide': 'Ocultar',
-  'pin': 'Fijar',
-  'unpin': 'Desfijar',
-  'reviewed': 'Revisado',
-  'resolved': 'Resuelto',
-  'dismissed': 'Desestimado'
-}
-
-export const STATUS_LABELS = {
-  'pending': 'Pendiente',
-  'reviewed': 'Revisado',
-  'resolved': 'Resuelto',
-  'dismissed': 'Desestimado'
-}
-
-export const getActionLabel = (action) => ACTION_LABELS[action] || action
-export const getStatusLabel = (status) => STATUS_LABELS[status] || status
-
-export const getTimeAgo = (date) => {
-  const now = new Date()
-  const diffMs = now - date
-  const diffMins = Math.floor(diffMs / 60000)
-  const diffHours = Math.floor(diffMs / 3600000)
-  const diffDays = Math.floor(diffMs / 86400000)
-
-  if (diffMins < 60) {
-    return `hace ${diffMins} min${diffMins !== 1 ? 's' : ''}`
-  } else if (diffHours < 24) {
-    return `hace ${diffHours} hora${diffHours !== 1 ? 's' : ''}`
-  } else if (diffDays < 7) {
-    return `hace ${diffDays} día${diffDays !== 1 ? 's' : ''}`
-  }
-  return date.toLocaleDateString()
-}
-
-export const generateUniqueKey = (item, type, index) => {
-  if (item && item.id) return `${type}-${item.id}`
-  return `${type}-${index}-${Date.now()}`
-}
-
-// Estado inicial y reducer
 export const initialState = {
   activeSection: 'pending',
-  filters: { status: 'pending', type: 'all', category: 'all' },
-  reports: { posts: [], comments: [], total: 0 },
+  filters: {
+    type: 'all',
+    category: 'all'
+  },
+  reports: {
+    posts: [],
+    comments: [],
+    total: 0
+  },
   stats: null,
-  history: { posts: [], comments: [] },
+  history: {
+    posts: [],
+    comments: []
+  },
   resolving: null,
-  resolveData: { action: 'reviewed', notes: '' }
+  resolveData: {
+    action: '',
+    notes: ''
+  }
 }
 
-export function stateReducer(state, action) {
+export const stateReducer = (state, action) => {
   switch (action.type) {
     case 'SET_ACTIVE_SECTION':
       return { ...state, activeSection: action.payload }
+    
     case 'SET_FILTERS':
       return { ...state, filters: { ...state.filters, ...action.payload } }
+    
     case 'SET_REPORTS':
       return { ...state, reports: action.payload }
+    
     case 'SET_STATS':
       return { ...state, stats: action.payload }
+    
     case 'SET_HISTORY':
       return { ...state, history: action.payload }
+    
     case 'SET_RESOLVING':
       return { ...state, resolving: action.payload }
-    case 'SET_RESOLVE_DATA':
-      return { ...state, resolveData: { ...state.resolveData, ...action.payload } }
+    
+    case 'SET_RESOLVE_ACTION':
+      return { 
+        ...state, 
+        resolveData: { ...state.resolveData, action: action.payload } 
+      }
+    
+    case 'SET_RESOLVE_NOTES':
+      return { 
+        ...state, 
+        resolveData: { ...state.resolveData, notes: action.payload } 
+      }
+    
     case 'RESET_RESOLVE_FORM':
-      return { ...state, resolveData: initialState.resolveData, resolving: null }
+      return { 
+        ...state, 
+        resolving: null,
+        resolveData: { action: '', notes: '' }
+      }
+    
     default:
       return state
   }
+}
+
+export const getStatusLabel = (status) => {
+  const statusLabels = {
+    'pending': 'Pendiente',
+    'resolved': 'Resuelto',
+    'reviewed': 'Revisado',
+    'dismissed': 'Descartado'
+  }
+  return statusLabels[status] || status
+}
+
+export const generateUniqueKey = (item, type, index) => {
+  return `${type}-${item.id || index}-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
+}
+
+export const getActionLabel = (action) => {
+  const actionLabels = {
+    'reviewed': 'Revisado',
+    'dismissed': 'Descartado',
+    'content_removed': 'Contenido eliminado',
+    'user_warned': 'Usuario advertido',
+    'user_suspended': 'Usuario suspendido',
+    'user_banned': 'Usuario baneado',
+    'post_deleted': 'Post eliminado',
+    'comment_deleted': 'Comentario eliminado',
+    'user_silenced': 'Usuario silenciado',
+    'user_activated': 'Usuario activado',
+    'role_changed': 'Rol cambiado',
+    'user_deleted': 'Usuario eliminado'
+  }
+  return actionLabels[action] || action
+}
+
+export const getTimeAgo = (dateString) => {
+  const date = new Date(dateString)
+  const now = new Date()
+  const diffInSeconds = Math.floor((now - date) / 1000)
+  
+  if (diffInSeconds < 60) {
+    return 'hace unos segundos'
+  }
+  
+  const diffInMinutes = Math.floor(diffInSeconds / 60)
+  if (diffInMinutes < 60) {
+    return `hace ${diffInMinutes} minuto${diffInMinutes !== 1 ? 's' : ''}`
+  }
+  
+  const diffInHours = Math.floor(diffInMinutes / 60)
+  if (diffInHours < 24) {
+    return `hace ${diffInHours} hora${diffInHours !== 1 ? 's' : ''}`
+  }
+  
+  const diffInDays = Math.floor(diffInHours / 24)
+  if (diffInDays < 30) {
+    return `hace ${diffInDays} día${diffInDays !== 1 ? 's' : ''}`
+  }
+  
+  const diffInMonths = Math.floor(diffInDays / 30)
+  if (diffInMonths < 12) {
+    return `hace ${diffInMonths} mes${diffInMonths !== 1 ? 'es' : ''}`
+  }
+  
+  const diffInYears = Math.floor(diffInMonths / 12)
+  return `hace ${diffInYears} año${diffInYears !== 1 ? 's' : ''}`
 }

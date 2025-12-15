@@ -21,7 +21,19 @@ export const authService = {
             }    
             throw new Error(errorMessage);
         }
-        return await response.json();
+        
+        const data = await response.json();
+        
+        if (data.access) {
+            localStorage.setItem('authToken', data.access);
+            console.log('authToken guardado en localStorage');
+        }
+        
+        if (data.refresh) {
+            localStorage.setItem('refresh_token', data.refresh);
+        }
+        
+        return data;
     },
     
     register: async (userData) => {
