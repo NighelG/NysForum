@@ -39,6 +39,7 @@ export const initialState = {
   },
   resolving: null,
   resolveData: {
+    activeKey: null,
     action: '',
     notes: ''
   }
@@ -64,23 +65,24 @@ export const stateReducer = (state, action) => {
     case 'SET_RESOLVING':
       return { ...state, resolving: action.payload }
     
-    case 'SET_RESOLVE_ACTION':
-      return { 
-        ...state, 
-        resolveData: { ...state.resolveData, action: action.payload } 
-      }
-    
-    case 'SET_RESOLVE_NOTES':
-      return { 
-        ...state, 
-        resolveData: { ...state.resolveData, notes: action.payload } 
+    case 'SET_RESOLVE_DATA':
+      return {
+        ...state,
+        resolveData: {
+          ...state.resolveData,
+          ...action.payload
+        }
       }
     
     case 'RESET_RESOLVE_FORM':
       return { 
         ...state, 
         resolving: null,
-        resolveData: { action: '', notes: '' }
+        resolveData: {
+          activeKey: null,
+          action: '',
+          notes: ''
+        }
       }
     
     default:

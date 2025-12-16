@@ -1,12 +1,25 @@
 import { useCallback } from 'react'
 
 export function useModerationState(dispatch, isAdmin) {
-    const handleResolveActionChange = useCallback((e) => {
-        dispatch({ type: 'SET_RESOLVE_DATA', payload: { action: e.target.value } })
+
+    const handleResolveActionChange = useCallback((key, value) => {
+        dispatch({
+            type: 'SET_RESOLVE_DATA',
+            payload: {
+                activeKey: key,
+                action: value
+            }
+        })
     }, [dispatch])
     
-    const handleResolveNotesChange = useCallback((e) => {
-        dispatch({ type: 'SET_RESOLVE_DATA', payload: { notes: e.target.value } })
+    const handleResolveNotesChange = useCallback((key, value) => {
+        dispatch({
+            type: 'SET_RESOLVE_DATA',
+            payload: {
+                activeKey: key,
+                notes: value
+            }
+        })
     }, [dispatch])
     
     const handleFilterChange = useCallback((filterType, value) => {

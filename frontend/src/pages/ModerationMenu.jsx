@@ -260,7 +260,7 @@ function ModerationMenu() {
                 <div className="reports-list">
                     {reports.posts.map((report, index) => (
                         <ReportCard
-                            key={generateUniqueKey(report, 'post', index)}
+                            key={`post-${report.id}`}
                             report={report}
                             type="post"
                             index={index}
@@ -273,7 +273,7 @@ function ModerationMenu() {
                     ))}
                     {reports.comments.map((report, index) => (
                         <ReportCard
-                            key={generateUniqueKey(report, 'comment', index)}
+                            key={`comment-${report.id}`}
                             report={report}
                             type="comment"
                             index={index}
