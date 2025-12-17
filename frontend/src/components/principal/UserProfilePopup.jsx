@@ -1,53 +1,53 @@
-import React, { useState, useEffect, useCallback } from "react";
-import { useavatar } from "../hooks/useavatar";
-import { authService } from "../services/authService";
-import "../styles/UserProfilePopup.css";
+import React, { useState, useEffect, useCallback } from "react"
+import { useavatar } from "../../hooks/useavatar"
+import { authService } from "../../services/authService"
+import "../../styles/UserProfilePopup.css"
 
 const UserProfilePopup = ({ username, isOpen, onClose }) => {
-    const [userData, setUserData] = useState(null);
-    const [loading, setLoading] = useState(false);
-    const avatarUrl = useavatar(username);
+    const [userData, setUserData] = useState(null)
+    const [loading, setLoading] = useState(false)
+    const avatarUrl = useavatar(username)
     useEffect(() => {
-        if (!isOpen) return;
-        setUserData(null);
-    }, [isOpen, username]);
+        if (!isOpen) return
+        setUserData(null)
+    }, [isOpen, username])
     useEffect(() => {
         if (isOpen && username) {
-            loadUserData();
+            loadUserData()
         }
-    }, [isOpen, username]);
+    }, [isOpen, username])
     const loadUserData = useCallback(async () => {
-        if (!username) return;
-        setLoading(true);
+        if (!username) return
+        setLoading(true)
         try {
-            const profileData = await authService.getUserProfile(username);
-            setUserData(profileData);
+            const profileData = await authService.getUserProfile(username)
+            setUserData(profileData)
         } catch (error) {
-            console.error("Error cargando datos del usuario:", error);
-            setUserData(null);
+            console.error("Error cargando datos del usuario:", error)
+            setUserData(null)
         } finally {
-            setLoading(false);
+            setLoading(false)
         }
-    }, [username]);
+    }, [username])
     useEffect(() => {
         const handleEscKey = (event) => {
-            if (event.key === "Escape" && isOpen) onClose();
-        };
-        if (isOpen) document.addEventListener("keydown", handleEscKey);
-        return () => document.removeEventListener("keydown", handleEscKey);
-    }, [isOpen, onClose]);
+            if (event.key === "Escape" && isOpen) onClose()
+        }
+        if (isOpen) document.addEventListener("keydown", handleEscKey)
+        return () => document.removeEventListener("keydown", handleEscKey)
+    }, [isOpen, onClose])
     const handleOverlayClick = (e) => {
         if (e.target.classList.contains("user-profile-modal-overlay")) {
-            onClose();
+            onClose()
         }
-    };
+    }
     const formatDate = (dateString) =>
         new Date(dateString).toLocaleDateString("es-ES", {
             year: "numeric",
             month: "short",
             day: "numeric",
-        });
-    if (!isOpen) return null;
+        })
+    if (!isOpen) return null
 
     return (
         <div className="user-profile-modal-overlay" onClick={handleOverlayClick}>
@@ -90,7 +90,7 @@ const UserProfilePopup = ({ username, isOpen, onClose }) => {
                 )}
             </div>
         </div>
-    );
-};
+    )
+}
 
-export default React.memo(UserProfilePopup);
+export default React.memo(UserProfilePopup)

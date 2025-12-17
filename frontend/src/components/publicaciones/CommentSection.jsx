@@ -1,8 +1,8 @@
 import React from 'react'
-import ReplyComment from './ReplyComment'
-import mediaService from '../services/mediaSerivce.js'
-import ReportButton from '../components/ReportButton'
-import OwnerActions from '../components/OwnerActions'
+import ReplyComment from './ReplyComment.jsx'
+import mediaService from '../../services/mediaSerivce.js'
+import ReportButton from './ReportButton.jsx'
+import OwnerActions from './OwnerActions.jsx'
 
 const CommentSection = ({ 
         comment, 
@@ -17,7 +17,6 @@ const CommentSection = ({
         onReplyContentChange, 
         onReply, 
         onToggleReplies,
-        // NUEVA PROP para recargar comentarios
         onCommentActionSuccess
     }) => {
     const isReplying = replyingTo === comment.id
@@ -116,8 +115,8 @@ const CommentSection = ({
                     contentId={comment.id}
                     authorProfileId={comment.profile.id}
                     currentUser={currentUser}
-                    onUpdate={(id, data) => import('../services/commentService').then(module => module.commentService.updateComment(id, data))}
-                    onDelete={(id) => import('../services/commentService').then(module => module.commentService.deleteComment(id))}
+                    onUpdate={(id, data) => import('../../services/commentService.js').then(module => module.commentService.updateComment(id, data))}
+                    onDelete={(id) => import('../../services/commentService.js').then(module => module.commentService.deleteComment(id))}
                     onSuccess={onCommentActionSuccess}
                     initialContent={comment.content}
                     className="comment-owner-actions"

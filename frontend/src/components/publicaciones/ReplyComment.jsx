@@ -1,7 +1,7 @@
 import React from 'react'
-import mediaService from '../services/mediaSerivce.js'
-import ReportButton from '../components/ReportButton'
-import OwnerActions from '../components/OwnerActions'
+import mediaService from '../../services/mediaSerivce.js'
+import ReportButton from './ReportButton.jsx'
+import OwnerActions from './OwnerActions.jsx'
 
 const ReplyComment = ({ 
     reply, 
@@ -111,8 +111,8 @@ const ReplyComment = ({
                     contentId={reply.id}
                     authorProfileId={reply.profile.id}
                     currentUser={currentUser}
-                    onUpdate={(id, data) => import('../services/commentService').then(module => module.commentService.updateComment(id, data))}
-                    onDelete={(id) => import('../services/commentService').then(module => module.commentService.deleteComment(id))}
+                    onUpdate={(id, data) => import('../../services/commentService.js').then(module => module.commentService.updateComment(id, data))}
+                    onDelete={(id) => import('../../services/commentService.js').then(module => module.commentService.deleteComment(id))}
                     onSuccess={onReplyActionSuccess}
                     initialContent={reply.content}
                     className="reply-owner-actions"

@@ -7,9 +7,9 @@ import { postService } from '../services/postService'
 import { commentService } from '../services/commentService'
 import mediaService from '../services/mediaSerivce.js'
 import Sidebar from '../components/SideBar.jsx'
-import CommentSection from '../components/CommentSection.jsx'
-import ReportButton from '../components/ReportButton.jsx'
-import OwnerActions from '../components/OwnerActions.jsx'
+import CommentSection from '../components/publicaciones/CommentSection.jsx'
+import ReportButton from '../components/publicaciones/ReportButton.jsx'
+import OwnerActions from '../components/publicaciones/OwnerActions.jsx'
 import '../styles/PostPage.css'
 
 const PostPage = () => {

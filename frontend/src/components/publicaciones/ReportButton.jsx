@@ -1,8 +1,8 @@
 import React, { useState } from 'react'
-import { useAuth } from '../context/AuthContext'
-import { useToast } from '../context/ToastContext'
-import { apiRequest } from '../services/apiConfig'
-import '../styles/ReportButton.css'
+import { useAuth } from '../../context/AuthContext'
+import { useToast } from '../../context/ToastContext'
+import { apiRequest } from '../../services/apiConfig'
+import '../../styles/ReportButton.css'
 
 const ReportButton = ({ contentType, contentId, contentAuthorId, onReportSubmitted }) => {
     const { user } = useAuth()

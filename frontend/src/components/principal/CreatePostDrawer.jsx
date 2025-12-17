@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react'
-import { useToast } from '../context/ToastContext'
-import { useApi } from '../hooks/useApi'
-import { postService } from '../services/postService.js'
-import mediaService from '../services/mediaSerivce.js'
-import '../styles/CreatePostDrawer.css'
+import { useToast } from '../../context/ToastContext.jsx'
+import { useApi } from '../../hooks/useApi.js'
+import { postService } from '../../services/postService.js'
+import mediaService from '../../services/mediaSerivce.js'
+import '../../styles/CreatePostDrawer.css'
 
 function CreatePostDrawer({ isOpen, setIsOpen, onPostCreated }) {
   const [title, setTitle] = useState('')

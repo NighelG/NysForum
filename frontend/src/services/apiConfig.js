@@ -15,6 +15,7 @@ export const getAuthHeaders = () => {
 export const getPublicHeaders = () => ({
     'Content-Type': 'application/json'
 });
+
 export const getFormDataHeaders = () => {
     const token = localStorage.getItem('authToken');
     const headers = {};
@@ -46,7 +47,14 @@ export const apiFileUpload = async (endpoint, formData) => {
             throw new Error('El servidor respondió con un formato incorrecto');
         }
         if (!response.ok) {
-            throw new Error(responseData.error || responseData.detail || 'Error subiendo archivo');
+            const error = new Error(
+                responseData.error ||
+                responseData.detail ||
+                'Error subiendo archivo'
+            );
+            error.status = response.status;
+            error.data = responseData;
+            throw error;
         }
         return responseData;
     } catch (error) {
@@ -57,14 +65,15 @@ export const apiFileUpload = async (endpoint, formData) => {
 
 export const apiRequest = async (endpoint, options = {}) => {
     const url = `${API_BASE_URL}${endpoint}`;
-    const isPublicEndpoint = endpoint.includes('/register/') || endpoint.includes('/token/');
-    let baseHeaders;
+    const isPublicEndpoint =
+        endpoint.includes('/register/') || endpoint.includes('/token/');
     const isFormData = options.body instanceof FormData;
-    if (isFormData) {
-        baseHeaders = getFormDataHeaders();
-    } else {
-        baseHeaders = isPublicEndpoint ? getPublicHeaders() : getAuthHeaders();
-    }
+    const baseHeaders = isFormData
+        ? getFormDataHeaders()
+        : isPublicEndpoint
+            ? getPublicHeaders()
+            : getAuthHeaders();
+
     const config = {
         method: options.method || 'GET',
         headers: {
@@ -72,45 +81,60 @@ export const apiRequest = async (endpoint, options = {}) => {
             ...options.headers
         }
     };
+
     if (options.body) {
         config.body = options.body;
     }
+
     try {
         const response = await fetch(url, config);
         if (response.status === 204) {
             return null;
         }
         const responseText = await response.text();
-        if (!response.ok) {
-            let errorMessage = `Error ${response.status}: ${response.statusText}`;    
-            try {
-                const errorData = JSON.parse(responseText);
-                errorMessage = errorData.error || errorData.detail || errorData.message || errorMessage;
-                if (errorData.username) {
-                    errorMessage = `Usuario: ${Array.isArray(errorData.username) ? errorData.username.join(', ') : errorData.username}`;
-                }
-                if (errorData.email) {
-                    errorMessage = `Email: ${Array.isArray(errorData.email) ? errorData.email.join(', ') : errorData.email}`;
-                }
-                if (errorData.password) {
-                    errorMessage = `Contraseña: ${Array.isArray(errorData.password) ? errorData.password.join(', ') : errorData.password}`;
-                }
-                if (errorData.non_field_errors) {
-                    errorMessage = Array.isArray(errorData.non_field_errors) ? errorData.non_field_errors.join(', ') : errorData.non_field_errors;
-                }
-            } catch (jsonError) {
-                if (responseText) {
-                    errorMessage = responseText;
-                }
-            }
-            throw new Error(errorMessage);
+        let data = null;
+        try {
+            data = responseText ? JSON.parse(responseText) : null;
+        } catch {
+            data = null;
         }
-        const result = responseText ? JSON.parse(responseText) : {};
-        return result;
+        if (!response.ok) {
+            let errorMessage =
+                data?.error ||
+                data?.detail ||
+                data?.message ||
+                `Error ${response.status}: ${response.statusText}`;
+            if (data?.username) {
+                errorMessage = `Usuario: ${Array.isArray(data.username) ? data.username.join(', ') : data.username}`;
+            }
+            if (data?.email) {
+                errorMessage = `Email: ${Array.isArray(data.email) ? data.email.join(', ') : data.email}`;
+            }
+            if (data?.password) {
+                errorMessage = `Contraseña: ${Array.isArray(data.password) ? data.password.join(', ') : data.password}`;
+            }
+            if (data?.non_field_errors) {
+                errorMessage = Array.isArray(data.non_field_errors)
+                    ? data.non_field_errors.join(', ')
+                    : data.non_field_errors;
+            }
+            const error = new Error(errorMessage);
+            error.status = response.status;
+            error.data = data;
+            throw error;
+        }
+        return data;
     } catch (error) {
         console.error('Error en petición API:', error);
-        if (error.name === 'TypeError' && error.message.includes('Failed to fetch')) {
-            throw new Error('Error de conexión. Verifica que el servidor Django esté ejecutándose en http://localhost:8000');
+        if (
+            error.name === 'TypeError' &&
+            error.message.includes('Failed to fetch')
+        ) {
+            const networkError = new Error(
+                'Error de conexión. Verifica que el servidor Django esté ejecutándose en http://localhost:8000'
+            );
+            networkError.status = 0;
+            throw networkError;
         }
         throw error;
     }

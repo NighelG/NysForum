@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import { getStatusLabel, getRoleLabel, getStatusOptions, getRoleOptions } from '../../utils/userUtils'
 import '../../styles/UserActionsMenu.css'
 
@@ -8,6 +8,8 @@ const UserActionsMenu = ({ user, currentUser, onEdit, onChangeStatus, onChangeRo
     const [formData, setFormData] = useState({})
     const [reason, setReason] = useState('')
     const [loading, setLoading] = useState(false)
+    const menuRef = useRef(null)
+    const buttonRef = useRef(null)
 
     const canEdit = currentUser && user && 
     currentUser.username !== user.username &&
@@ -15,6 +17,29 @@ const UserActionsMenu = ({ user, currentUser, onEdit, onChangeStatus, onChangeRo
     
     const canDelete = canEdit && 
     (user.role !== 'admin' && user.role !== 'true_admin')
+
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (isOpen && 
+                menuRef.current && 
+                !menuRef.current.contains(event.target) && 
+                buttonRef.current && 
+                !buttonRef.current.contains(event.target)) {
+                setIsOpen(false)
+            }
+        }
+        if (isOpen) {
+            document.addEventListener('mousedown', handleClickOutside)
+            document.body.style.overflow = 'hidden'
+        } else {
+            document.body.style.overflow = ''
+        }
+        
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside)
+            document.body.style.overflow = ''
+        }
+    }, [isOpen])
 
     const handleModalOpen = (modalType, initialData = {}) => {
         setActiveModal(modalType)
@@ -99,6 +124,7 @@ const UserActionsMenu = ({ user, currentUser, onEdit, onChangeStatus, onChangeRo
         <>
             <div className="user-actions-menu-container">
                 <button 
+                    ref={buttonRef}
                     className="menu-toggle-btn"
                     onClick={() => setIsOpen(!isOpen)}
                     title="Acciones"
@@ -107,7 +133,7 @@ const UserActionsMenu = ({ user, currentUser, onEdit, onChangeStatus, onChangeRo
                 </button>
                 
                 {isOpen && (
-                    <div className={`actions-menu-dropdown ${positionClasses[position]}`}>
+                    <div ref={menuRef} className={`actions-menu-dropdown ${positionClasses[position]}`}>
                         <button className="dropdown-item edit-item"
                             onClick={() => handleModalOpen('edit', {
                                 email: user.email || '',
@@ -118,13 +144,16 @@ const UserActionsMenu = ({ user, currentUser, onEdit, onChangeStatus, onChangeRo
                         
                         {canEdit && (
                             <>
-                                <button className="dropdown-item status-item"onClick={() => handleModalOpen('status', { status: user.status })}>Cambiar estado</button>
-                                <button className="dropdown-item role-item"onClick={() => handleModalOpen('role', { role: user.role })}>Cambiar rol</button>
+                                <button className="dropdown-item status-item"onClick={() => handleModalOpen('status', { status: user.status })}> 
+                                    <img className='icono-negro' src="/user_status.png" alt="" /> Cambiar estado</button>
+                                <button className="dropdown-item role-item"onClick={() => handleModalOpen('role', { role: user.role })}> 
+                                    <img className='icono-negro' src="user_role.png" alt="" /> Cambiar rol</button>
                             </>
                         )}
                         
                         {canDelete && (
-                            <button className="dropdown-item delete-item"onClick={() => handleModalOpen('delete')}>Eliminar usuario</button>
+                            <button className="dropdown-item delete-item"onClick={() => handleModalOpen('delete')}>
+                                <img className='icono-negro' src="user_remove.png" alt="" /> Eliminar usuario</button>
                         )}
                     </div>
                 )}

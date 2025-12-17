@@ -13,6 +13,7 @@
     line-height: 1;
     color: #495057;
     transition: all 0.2s ease;
+    z-index: 1;
 }
 
 .menu-toggle-btn:hover {
@@ -21,50 +22,59 @@
 }
 
 .actions-menu-dropdown {
-    position: absolute;
+    position: fixed !important;
     background: white;
     border: 1px solid #dee2e6;
-    border-radius: 6px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-    min-width: 200px;
-    z-index: 1000;
-    margin-top: 5px;
+    border-radius: 8px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
+    min-width: 220px;
+    z-index: 9999;
+    overflow: hidden;
+    animation: menuSlideIn 0.3s ease;
+    max-height: 400px;
+    overflow-y: auto;
+    top: 50% !important;
+    left: 50% !important;
+    transform: translate(-50%, -50%) !important;
+    will-change: transform;
+    backface-visibility: hidden;
 }
 
-.menu-bottom-right {
-    top: 100%;
-    right: 0;
-}
-
-.menu-bottom-left {
-    top: 100%;
-    left: 0;
-}
-
-.menu-top-right {
-    bottom: 100%;
-    right: 0;
-}
-
+.menu-bottom-right,
+.menu-bottom-left,
+.menu-top-right,
 .menu-top-left {
-    bottom: 100%;
-    left: 0;
+    top: 50% !important;
+    left: 50% !important;
+    transform: translate(-50%, -50%) !important;
+}
+
+@keyframes menuSlideIn {
+    from {
+        opacity: 0;
+        transform: translate(-50%, -50%) scale(0.95);
+    }
+    to {
+        opacity: 1;
+        transform: translate(-50%, -50%) scale(1);
+    }
 }
 
 .dropdown-item {
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 12px;
     width: 100%;
-    padding: 10px 15px;
+    padding: 14px 18px;
     border: none;
     background: none;
     text-align: left;
     cursor: pointer;
     font-size: 14px;
     color: #495057;
-    transition: background 0.2s ease;
+    transition: all 0.2s ease;
     border-bottom: 1px solid #f8f9fa;
+    white-space: nowrap;
 }
 
 .dropdown-item:last-child {
@@ -77,18 +87,50 @@
 
 .edit-item:hover {
     color: #1976d2;
+    background: #e3f2fd;
 }
 
 .status-item:hover {
     color: #f57c00;
+    background: #fff3e0;
 }
 
 .role-item:hover {
     color: #388e3c;
+    background: #e8f5e9;
 }
 
 .delete-item:hover {
     color: #d32f2f;
+    background: #ffebee;
+}
+
+.icono-negro {
+    width: 16px;
+    height: 16px;
+    filter: brightness(0);
+    opacity: 0.7;
+}
+
+.dropdown-item:hover .icono-negro {
+    opacity: 1;
+}
+
+.menu-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.4);
+    z-index: 9998;
+    animation: overlayFadeIn 0.2s ease;
+    backdrop-filter: blur(2px);
+}
+
+@keyframes overlayFadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
 }
 
 .action-modal-overlay {
@@ -97,13 +139,14 @@
     left: 0;
     right: 0;
     bottom: 0;
-    background: rgba(0,0,0,0.5);
+    background: rgba(0, 0, 0, 0.7);
     display: flex;
     align-items: center;
     justify-content: center;
-    z-index: 9999;
+    z-index: 10000;
     padding: 20px;
     animation: fadeIn 0.2s ease;
+    backdrop-filter: blur(3px);
 }
 
 @keyframes fadeIn {
@@ -113,14 +156,16 @@
 
 .action-modal {
     background: white;
-    border-radius: 10px;
-    padding: 25px;
+    border-radius: 12px;
+    padding: 30px;
     max-width: 500px;
     width: 100%;
     max-height: 80vh;
     overflow-y: auto;
-    box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
     animation: slideUp 0.3s ease;
+    position: relative;
+    z-index: 10001;
 }
 
 @keyframes slideUp {
@@ -135,9 +180,10 @@
 }
 
 .action-modal h3 {
-    margin: 0 0 20px 0;
+    margin: 0 0 25px 0;
     color: #333;
-    font-size: 18px;
+    font-size: 20px;
+    font-weight: 600;
 }
 
 .form-group {
@@ -149,18 +195,23 @@
     margin-bottom: 8px;
     font-weight: 500;
     color: #333;
+    font-size: 14px;
 }
 
+.form-input,
 .form-select,
 .form-group textarea {
     width: 100%;
-    padding: 10px;
+    padding: 10px 12px;
     border: 1px solid #dee2e6;
     border-radius: 6px;
     font-size: 14px;
     font-family: inherit;
+    transition: all 0.2s ease;
+    box-sizing: border-box;
 }
 
+.form-input:focus,
 .form-select:focus,
 .form-group textarea:focus {
     outline: none;
@@ -170,6 +221,11 @@
 
 .form-group textarea {
     min-height: 80px;
+    resize: vertical;
+}
+
+.form-textarea {
+    min-height: 100px;
     resize: vertical;
 }
 
@@ -184,6 +240,7 @@
 
 .warning-message p {
     margin: 5px 0;
+    font-size: 14px;
 }
 
 .modal-note {
@@ -214,31 +271,83 @@
     transition: all 0.2s ease;
 }
 
-.modal-actions button:hover {
+.modal-actions button:hover:not(:disabled) {
     background: #e9ecef;
+    transform: translateY(-1px);
 }
 
 .modal-actions button.primary {
-    background: #667eea;
-    border-color: #667eea;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border: none;
     color: white;
 }
 
-.modal-actions button.primary:hover {
-    background: #5a67d8;
+.modal-actions button.primary:hover:not(:disabled) {
+    background: linear-gradient(135deg, #5a67d8 0%, #6b4290 100%);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
 }
 
 .modal-actions button.danger {
-    background: #dc3545;
-    border-color: #dc3545;
+    background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+    border: none;
     color: white;
 }
 
-.modal-actions button.danger:hover {
-    background: #c82333;
+.modal-actions button.danger:hover:not(:disabled) {
+    background: linear-gradient(135deg, #c82333 0%, #b21f2d 100%);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(220, 53, 69, 0.3);
 }
 
 .modal-actions button:disabled {
     opacity: 0.6;
     cursor: not-allowed;
+    transform: none !important;
+}
+
+@media (max-width: 768px) {
+    .actions-menu-dropdown {
+        min-width: 280px;
+        max-width: 90vw;
+        max-height: 70vh;
+        padding: 5px 0;
+    }
+    
+    .dropdown-item {
+        padding: 16px 20px;
+        font-size: 15px;
+    }
+    
+    .action-modal {
+        padding: 20px;
+        margin: 10px;
+    }
+    
+    .modal-actions {
+        flex-direction: column;
+    }
+    
+    .modal-actions button {
+        width: 100%;
+    }
+    
+    .action-modal-overlay {
+        padding: 10px;
+    }
+}
+
+.menu-closing {
+    animation: menuSlideOut 0.2s ease forwards;
+}
+
+@keyframes menuSlideOut {
+    from {
+        opacity: 1;
+        transform: translate(-50%, -50%) scale(1);
+    }
+    to {
+        opacity: 0;
+        transform: translate(-50%, -50%) scale(0.95);
+    }
 }

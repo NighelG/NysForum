@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
-import { useApi } from '../hooks/useApi'
-import { useToast } from '../context/ToastContext'
-import '../styles/OwnerActions.css'
+import { useApi } from '../../hooks/useApi'
+import { useToast } from '../../context/ToastContext'
+import '../../styles/OwnerActions.css'
 
 const OwnerActions = ({
     contentType,
